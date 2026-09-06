@@ -22,10 +22,9 @@ records the official binary input checksums, while `scripts/package.py` and
 `docs/runtime.patch` document Yomigami’s runtime changes. The upstream plugin frontends
 are not loaded as Yomigami’s application.
 
-The initial public distribution is the Yomigami source repository. Local build tooling
-fetches official upstream binary inputs. Any future public combined binary release must
-provide corresponding-source access for the exact runtime and engine, their dependencies,
-and Yomigami’s changes, with the applicable notices and build instructions.
+The prebuilt release includes a source companion alongside the installer ZIP. See
+[RELEASE-SOURCES.md](docs/RELEASE-SOURCES.md) for source trees, dependency archives,
+upstream download locations, revisions and build instructions.
 
 Book providers, Gutendex, Gutenberg and Internet Archive are external services, not
 bundled catalogs or endorsements. No downloaded manga chapters, user libraries or

@@ -21,7 +21,7 @@ It began with a simple frustration: updating KOReader could disturb the Rakuyomi
 
 **Independent of your KOReader installation. Deeply indebted to KOReader and Rakuyomi.**
 
-> **Native alpha · 0.4.0.** Developed for the jailbroken Kindle Paperwhite 12th generation, with firmware 5.18.5.0.1. Core reading and page turns have been exercised on that device; the latest PDF/EPUB discovery, dark-mode and display changes still need hardware confirmation. Other models are unverified. This public release is source-first: build instructions are below; a prebuilt public installer is not yet published.
+> **Native alpha · 0.4.0.** Developed for the jailbroken Kindle Paperwhite 12th generation, with firmware 5.18.5.0.1. Core reading and page turns have been exercised on that device; the latest PDF/EPUB discovery, dark-mode and display changes still need hardware confirmation. Other models are unverified. A prebuilt installer ZIP is available for this target; nearby firmware versions are not yet verified.
 
 ## Make room for the story
 
@@ -54,9 +54,11 @@ These are native emulator captures at the Paperwhite’s 1272 × 1696 resolution
 
 Yomigami needs an **already jailbroken, compatible Kindle** and a working scriptlet launcher. It does not jailbreak your device.
 
-1. Follow the [build guide](docs/BUILDING.md) to prepare the pinned runtime and create an installer locally.
-2. Follow the [installation guide](docs/INSTALL.md) to copy the two installer files to your Kindle.
-3. Open **Yomigami**, try the original Reader Test, then add your own books.
+1. **[Download the Paperwhite 12 installer ZIP](https://github.com/KapoorCommits/Yomigami/releases/download/v0.4.0-alpha/Yomigami-0.4.0-Paperwhite12-Install.zip)** and extract it on your computer.
+2. Copy `yomigami-0.4.0.tar.gz` to the Kindle storage root and `documents/Yomigami.sh` into its `documents` folder. Leave the tar.gz compressed.
+3. Disconnect USB and open **Yomigami**. First launch checks the archive and installs the app.
+
+No build tools are needed. The installer refuses to overwrite an existing Yomigami installation. See the [installation guide](docs/INSTALL.md) for details, or the [build guide](docs/BUILDING.md) to assemble it yourself. Try the original Reader Test before adding your books.
 
 Everything lives under `/mnt/us/yomigami`. Your separately installed KOReader and Rakuyomi remain separate. Keep a backup of your reading data before installing an alpha update.
 

@@ -2,13 +2,14 @@
 
 **Target:** jailbroken Kindle Paperwhite 12th generation, firmware 5.18.5.0.1,
 with a working scriptlet launcher. Other models are unverified. This is alpha software.
-Yomigami does not install a jailbreak. Start with the [build guide](BUILDING.md).
+Yomigami does not install a jailbreak. Nearby firmware versions are unverified.
+Download the **[Paperwhite 12 installer ZIP](https://github.com/KapoorCommits/Yomigami/releases/download/v0.4.0-alpha/Yomigami-0.4.0-Paperwhite12-Install.zip)**; no build tools are required.
 
 ## First installation
 
-1. Build the installer locally.
-2. Copy `dist/yomigami-0.4.0.tar.gz` to the Kindle storage root.
-3. Copy `dist/installer/Yomigami.sh` into the Kindle’s `documents` folder.
+1. Download and extract the installer ZIP on your computer (or [build it locally](BUILDING.md)).
+2. Copy `yomigami-0.4.0.tar.gz` to the Kindle storage root.
+3. Copy `documents/Yomigami.sh` into the Kindle’s `documents` folder.
 4. Disconnect USB and open the new **Yomigami** book.
 5. The installer checks the archive checksum and installs into `/mnt/us/yomigami`.
    It refuses to overwrite an existing or incomplete installation.

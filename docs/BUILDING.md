@@ -62,6 +62,7 @@ and `runtime-lock.json`. `scripts/package.py` applies the runtime adaptations; t
 diff is recorded in `docs/runtime.patch`. To inspect or compile the underlying engines,
 check out the listed revisions and follow their upstream recursive-submodule/build instructions.
 
-The first public Yomigami release publishes application source and local build tooling,
-not a prebuilt runtime bundle. Before publishing a combined binary, provide its complete
-corresponding-source access, dependency revisions, build instructions and notices alongside it.
+The prebuilt installer and its source companion are published together. See
+[RELEASE-SOURCES.md](RELEASE-SOURCES.md) for the exact source contents and how the native
+dependencies are obtained. To create the copy-to-Kindle ZIP after building the installer,
+run `python3 scripts/make_release_zip.py`.
