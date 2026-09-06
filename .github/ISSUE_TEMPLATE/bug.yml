@@ -1,0 +1,27 @@
+name: Bug report
+description: Help us reproduce a problem on your reader.
+title: "[Bug] "
+body:
+  - type: input
+    id: device
+    attributes:
+      label: Kindle model, firmware and Yomigami version
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+    validations:
+      required: true
+  - type: textarea
+    id: result
+    attributes:
+      label: Expected and actual behavior
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Test file or redacted evidence
+      description: Please use original fixtures. Do not upload downloaded books or credentials.

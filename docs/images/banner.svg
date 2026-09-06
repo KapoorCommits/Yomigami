@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="610" viewBox="0 0 1600 610" role="img" aria-label="Yomigami. A quieter home for your next chapter.">
+<rect width="1600" height="610" rx="20" fill="#f4f1e8"/><rect x="30" y="30" width="1540" height="550" rx="9" fill="none" stroke="#d8d4c7"/>
+<g fill="none" stroke="#344b3e" stroke-width="3"><path d="M1160 388Q1242 341 1330 377L1330 493Q1245 457 1160 494Q1075 457 990 493V377Q1078 341 1160 388Z"/><path d="M1160 388V494M1009 396Q1080 370 1142 402M1009 414Q1080 388 1142 420M1178 402Q1242 370 1310 396M1178 420Q1242 388 1310 414M1148 334Q1143 257 1225 170"/></g>
+<g fill="#344b3e"><path d="M1154 294Q1084 281 1111 232Q1152 240 1154 294Z"/><path d="M1168 263Q1163 205 1207 202Q1204 244 1168 263Z"/><path d="M1189 217Q1172 165 1213 151Q1226 187 1189 217Z"/><path d="M1152 321Q1164 278 1210 287Q1198 328 1152 321Z"/></g>
+<text x="108" y="132" font-family="Arial, sans-serif" font-size="18" letter-spacing="5" fill="#667262">A READER OF YOUR OWN</text>
+<text x="100" y="295" font-family="Georgia, serif" font-size="132" fill="#233c30">Yomigami</text>
+<text x="108" y="365" font-family="Georgia, serif" font-size="32" fill="#4a584d">A quieter home for your next chapter.</text>
+<path d="M108 416H704" stroke="#b5b9a9"/>
+<text x="108" y="467" font-family="Arial, sans-serif" font-size="19" letter-spacing="3" fill="#667262">MANGA · PDF · EPUB · OPEN SOURCE</text>
+</svg>

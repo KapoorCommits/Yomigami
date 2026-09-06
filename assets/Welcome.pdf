@@ -1,0 +1,50 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [4 0 R] /Count 1 >>
+endobj
+3 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+4 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 600 800] /Resources << /Font << /F1 3 0 R >> >> /Contents 5 0 R >>
+endobj
+5 0 obj
+<< /Length 1176 >>
+stream
+0 g
+BT /F1 26 Tf 40 760 Td (Welcome to Yomigami) Tj ET
+BT /F1 15 Tf 40 729 Td (Your manga and PDFs, in one quiet library.) Tj ET
+BT /F1 15 Tf 40 698 Td () Tj ET
+BT /F1 15 Tf 40 667 Td (Open Reader Test to try all 12 pages.) Tj ET
+BT /F1 15 Tf 40 636 Td (Tap the left edge to advance in manga mode.) Tj ET
+BT /F1 15 Tf 40 605 Td (Tap the middle for reading options.) Tj ET
+BT /F1 15 Tf 40 574 Td (The footer lets you jump to a page.) Tj ET
+BT /F1 15 Tf 40 543 Td () Tj ET
+BT /F1 15 Tf 40 512 Td (Add books using +, or copy PDF and CBZ files) Tj ET
+BT /F1 15 Tf 40 481 Td (into yomigami/data/library and rescan.) Tj ET
+BT /F1 15 Tf 40 450 Td (Use Sources to find and download manga.) Tj ET
+BT /F1 15 Tf 40 419 Td () Tj ET
+BT /F1 15 Tf 40 388 Td (Options has Fit page, Fit width and direction.) Tj ET
+BT /F1 15 Tf 40 357 Td (Fit width: swipe up to pan down a tall page.) Tj ET
+BT /F1 15 Tf 40 326 Td (Your place is saved after every page turn.) Tj ET
+BT /F1 15 Tf 40 295 Td () Tj ET
+BT /F1 15 Tf 40 264 Td (This is an initial test build.) Tj ET
+BT /F1 15 Tf 40 233 Td (Please test power-button sleep and wake,) Tj ET
+BT /F1 15 Tf 40 202 Td (then use + and Exit to Kindle.) Tj ET
+endstream
+endobj
+xref
+0 6
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000115 00000 n 
+0000000185 00000 n 
+0000000311 00000 n 
+trailer << /Size 6 /Root 1 0 R >>
+startxref
+1538
+%%EOF

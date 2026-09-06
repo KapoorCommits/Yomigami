@@ -1,0 +1,287 @@
+--- runtime/koreader.sh
++++ runtime/koreader.sh
+@@ -16,9 +16,9 @@
+ # changed after an update (requiring a complete restart from the parent
+ # launcher).
+ if [ "$(dirname "${0}")" != "/var/tmp" ]; then
+-    cp -pf "${0}" /var/tmp/koreader.sh
+-    chmod 777 /var/tmp/koreader.sh
+-    exec /var/tmp/koreader.sh "$@"
++    cp -pf "${0}" /var/tmp/yomigami-runtime.sh
++    chmod 777 /var/tmp/yomigami-runtime.sh
++    exec /var/tmp/yomigami-runtime.sh "$@"
+ fi
+ 
+ # We rely on starting from our working directory, and it needs to be set, sane and absolute.
+@@ -30,8 +30,8 @@
+ [ -e "${PROC_FIVEWAY}" ] && echo unlock >"${PROC_FIVEWAY}"
+ 
+ # NOTE: Same vfat+fuse shenanigans needed for FBInk, before we source libko...
+-cp -pf "${KOREADER_DIR}/fbink" /var/tmp/fbink
+-chmod 777 /var/tmp/fbink
++cp -pf "${KOREADER_DIR}/fbink" /var/tmp/yomigami-fbink
++chmod 777 /var/tmp/yomigami-fbink
+ 
+ # Load our helper functions...
+ if [ -f "${KOREADER_DIR}/libkohelper.sh" ]; then
+@@ -125,61 +125,7 @@
+ cd "${KOREADER_DIR}" || exit
+ 
+ # Handle pending OTA update
+-ko_update_check() {
+-    NEWUPDATE="${KOREADER_DIR}/ota/koreader.updated.tar"
+-    INSTALLED="${KOREADER_DIR}/ota/koreader.installed.tar"
+-    if [ -f "${NEWUPDATE}" ]; then
+-        logmsg "Updating KOReader . . ."
+-        # Let our checkpoint script handle the detailed visual feedback...
+-        eips_print_bottom_centered "Updating KOReader" 3
+-        # Keep a copy of the old manifest for cleaning leftovers later.
+-        cp "${KOREADER_DIR}/ota/package.index" /tmp/
+-        # Setup the FBInk daemon
+-        export FBINK_NAMED_PIPE="/tmp/koreader.fbink"
+-        rm -f "${FBINK_NAMED_PIPE}"
+-        FBINK_PID="$(/var/tmp/fbink --daemon 1 %KOREADER% -q -y -6 -P 0)"
+-        # NOTE: See frontend/ui/otamanager.lua for a few more details on how we squeeze a percentage out of tar's checkpoint feature
+-        # NOTE: %B should always be 512 in our case, so let stat do part of the maths for us instead of using %s ;).
+-        FILESIZE="$(stat -c %b "${NEWUPDATE}")"
+-        BLOCKS="$((FILESIZE / 20))"
+-        export CPOINTS="$((BLOCKS / 100))"
+-        # NOTE: To avoid blowing up when tar truncates itself during an update, copy our GNU tar binary to the system's tmpfs,
+-        #       and run that one (c.f., #4602)...
+-        #       This is most likely a side-effect of the weird fuse overlay being used for /mnt/us (vs. the real vfat on /mnt/base-us),
+-        #       which we cannot use because it's been mounted noexec for a few years now...
+-        cp -pf "${KOREADER_DIR}/tar" /var/tmp/gnutar
+-        # shellcheck disable=SC2016
+-        /var/tmp/gnutar --no-same-permissions --no-same-owner --checkpoint="${CPOINTS}" --checkpoint-action=exec='printf "%s" $((TAR_CHECKPOINT / CPOINTS)) > ${FBINK_NAMED_PIPE}' -C "${UNPACK_DIR}" -xf "${NEWUPDATE}"
+-        fail=$?
+-        kill -TERM "${FBINK_PID}"
+-        # And remove our temporary tar binary...
+-        rm -f /var/tmp/gnutar
+-        # Cleanup behind us...
+-        if [ "${fail}" -eq 0 ]; then
+-            mv "${NEWUPDATE}" "${INSTALLED}"
+-            # Cleanup leftovers from previous install.
+-            (cd "${UNPACK_DIR}" && grep -xvFf "${KOREADER_DIR}/ota/package.index" /tmp/package.index | xargs -r rm -vf)
+-            logmsg "Update successful :)"
+-            eips_print_bottom_centered "Update successful :)" 2
+-            eips_print_bottom_centered "KOReader will start momentarily . . ." 1
+-            # NOTE: Because, yep, that'll probably happen, as there's a high probability sh will throw a bogus syntax error,
+-            #       probably for the same fuse-related reasons as tar...
+-            # NOTE: Even if it doesn't necessarily leave the device in an unusable state,
+-            #       always recommend a hard-reboot to flush stale ghost copies...
+-            eips_print_bottom_centered "If it doesn't, you'll want to force a hard reboot" 0
+-        else
+-            # Huh ho...
+-            logmsg "Update failed :( (${fail})"
+-            eips_print_bottom_centered "Update failed :(" 2
+-            eips_print_bottom_centered "KOReader may fail to function properly" 1
+-        fi
+-        rm -f /tmp/package.index "${NEWUPDATE}" # always purge newupdate to prevent update loops
+-        unset CPOINTS FBINK_NAMED_PIPE
+-        unset BLOCKS FILESIZE FBINK_PID
+-        # Ensure everything is flushed to disk before we restart. This *will* stall for a while on slow storage!
+-        sync
+-    fi
+-}
++ko_update_check() { :; }
+ # NOTE: Keep doing an initial update check, in addition to one during the restart loop, so we can pickup potential updates of this very script...
+ ko_update_check
+ # If an update happened, and was successful, reexec
+@@ -187,7 +133,7 @@
+     # By now, we know we're in the right directory, and our script name is pretty much set in stone, so we can forgo using $0
+     # NOTE: REEXEC_FLAGS *needs* to be unquoted: we *want* word splitting here ;).
+     # shellcheck disable=SC2086
+-    exec ./koreader.sh ${REEXEC_FLAGS} "${@}"
++    exec ./yomigami-runtime.sh ${REEXEC_FLAGS} "${@}"
+ fi
+ 
+ # export dict directory
+@@ -249,7 +195,7 @@
+     # c.f., https://github.com/koreader/koreader/commit/60f83e842ccce57931cbed5ffcebb28515f6f5d7
+     if [ "${kpv_launch_count}" = "" ] || [ "${kpv_launch_count}" = "0" ]; then
+         # NOTE: Dump the fb so we can restore something useful on exit...
+-        cat /dev/fb0 >/var/tmp/koreader-fb.dump
++        cat /dev/fb0 >/var/tmp/yomigami-fb.dump
+         # We're going to need our current FW version...
+         FW_VERSION="$(grep '^Kindle 5' /etc/prettyversion.txt 2>&1 | sed -n -r 's/^(Kindle)([[:blank:]]*)([[:digit:]\.]*)(.*?)$/\3/p')"
+         # NOTE: We want to disable the status bar (at the very least). Unfortunately, the soft hide/unhide method doesn't work properly anymore since FW 5.6.5...
+@@ -314,10 +260,10 @@
+ fi
+ 
+ # finally call reader
+-logmsg "Starting KOReader . . ."
++logmsg "Starting Yomigami . . ."
+ # That's not necessary when using KPVBooklet ;).
+ if [ "${FROM_KUAL}" = "yes" ]; then
+-    eips_print_bottom_centered "Starting KOReader . . ." 1
++    eips_print_bottom_centered "Starting Yomigami . . ." 1
+ fi
+ 
+ # we keep at most 500KB worth of crash log
+@@ -331,14 +277,14 @@
+     # Do an update check now, so we can actually update KOReader via the "Restart KOReader" menu entry ;).
+     ko_update_check
+ 
+-    ./reader.lua "$@" >>crash.log 2>&1
++    ./yomigami.lua "$@" >>crash.log 2>&1
+     RETURN_VALUE=$?
+ done
+ 
+ # clean up our own process tree in case the reader crashed (if needed, to avoid flooding KUAL's log)
+-if pidof reader.lua >/dev/null 2>&1; then
+-    logmsg "Sending a SIGTERM to stray KOreader processes . . ."
+-    killall -TERM reader.lua
++if pidof yomigami.lua >/dev/null 2>&1; then
++    logmsg "Sending a SIGTERM to stray Yomigami processes . . ."
++    killall -TERM yomigami.lua
+ fi
+ 
+ # Resume volumd, if need be
+@@ -381,16 +327,16 @@
+     if [ "${PILLOW_HARD_DISABLED}" = "yes" ]; then
+         logmsg "Enabling pillow . . ."
+         # NOTE: Try to leave the user with a slightly more useful FB content than our own last screen...
+-        cat /var/tmp/koreader-fb.dump >/dev/fb0
+-        rm -f /var/tmp/koreader-fb.dump
++        cat /var/tmp/yomigami-fb.dump >/dev/fb0
++        rm -f /var/tmp/yomigami-fb.dump
+         lipc-set-prop com.lab126.pillow disableEnablePillow enable
+         lipc-set-prop com.lab126.appmgrd start app://com.lab126.booklet.home
+     fi
+     if [ "${PILLOW_SOFT_DISABLED}" = "yes" ]; then
+         logmsg "Restoring the status bar . . ."
+         # NOTE: Try to leave the user with a slightly more useful FB content than our own last screen...
+-        cat /var/tmp/koreader-fb.dump >/dev/fb0
+-        rm -f /var/tmp/koreader-fb.dump
++        cat /var/tmp/yomigami-fb.dump >/dev/fb0
++        rm -f /var/tmp/yomigami-fb.dump
+         lipc-set-prop com.lab126.pillow interrogatePillow '{"pillowId": "default_status_bar", "function": "nativeBridge.showMe();"}'
+         lipc-set-prop com.lab126.appmgrd start app://com.lab126.booklet.home
+     fi
+@@ -425,6 +371,6 @@
+ fi
+ 
+ # Wipe the clones on exit
+-rm -f /var/tmp/koreader.sh /var/tmp/fbink
++rm -f /var/tmp/yomigami-runtime.sh /var/tmp/yomigami-fbink
+ 
+ exit ${RETURN_VALUE}
+--- runtime/frontend/device/kindle/device.lua
++++ runtime/frontend/device/kindle/device.lua
+@@ -105,7 +105,7 @@
+     local haslipc, lipc = pcall(require, "liblipclua")
+     local lipc_handle
+     if haslipc then
+-        lipc_handle = lipc.init("com.github.koreader.networkmgr")
++        lipc_handle = lipc.init("org.yomigami.networkmgr")
+     end
+     if lipc_handle then
+         lipc_handle:set_string_property("com.lab126.cmd", "ensureConnection", "wifi:" .. essid)
+@@ -204,7 +204,7 @@
+     local haslipc, lipc = pcall(require, "liblipclua")
+     local lipc_handle
+     if haslipc then
+-        lipc_handle = lipc.init("com.github.koreader.networkmgr")
++        lipc_handle = lipc.init("org.yomigami.networkmgr")
+     end
+     if not lipc_handle then
+         logger.dbg("kindleScanThenGetResults: Failed to acquire a lipc handle for NetworkMgr")
+@@ -271,7 +271,7 @@
+     local haslipc, lipc = pcall(require, "liblipclua")
+     local lipc_handle
+     if haslipc then
+-        lipc_handle = lipc.init("com.github.koreader.networkmgr")
++        lipc_handle = lipc.init("org.yomigami.networkmgr")
+     end
+     if lipc_handle then
+         -- Be extremely thorough... c.f., #6019
+@@ -298,7 +298,7 @@
+     local haslipc, lipc = pcall(require, "liblipclua")
+     local lipc_handle
+     if haslipc then
+-        lipc_handle = lipc.init("com.github.koreader.networkmgr")
++        lipc_handle = lipc.init("org.yomigami.networkmgr")
+     end
+     if lipc_handle then
+         local status = lipc_handle:get_int_property("com.lab126.wifid", "enable") or 0
+@@ -333,7 +333,7 @@
+         logger.warn("could not load liblipclua:", lipc)
+         return true
+     end
+-    local lipc_handle = lipc.init("com.github.koreader.device")
++    local lipc_handle = lipc.init("org.yomigami.device")
+     if not lipc_handle then
+         logger.warn("could not get lipc handle")
+         return true
+@@ -851,7 +851,7 @@
+ function Kindle:isStartupScriptUpToDate()
+     local md5 = require("ffi/MD5")
+     -- Compare the hash of the *active* script to the *potential* one.
+-    return md5.sumFile("/var/tmp/koreader.sh") == md5.sumFile("koreader.sh")
++    return md5.sumFile("/var/tmp/yomigami-runtime.sh") == md5.sumFile("yomigami-runtime.sh")
+ end
+ 
+ function Kindle:UIManagerReady(uimgr)
+@@ -901,7 +901,7 @@
+ function Kindle:ambientBrightnessLevel()
+     local haslipc, lipc = pcall(require, "liblipclua")
+     if not haslipc or lipc == nil then return 0 end
+-    local lipc_handle = lipc.init("com.github.koreader.ambientbrightness")
++    local lipc_handle = lipc.init("org.yomigami.ambientbrightness")
+     if not lipc_handle then return 0 end
+     local value = lipc_handle:get_int_property("com.lab126.powerd", "alsLux")
+     lipc_handle:close()
+@@ -1490,7 +1490,7 @@
+     --- @note See comments in KindleOasis2:init() for details.
+     local haslipc, lipc = pcall(require, "liblipclua")
+     if haslipc then
+-        local lipc_handle = lipc.init("com.github.koreader.screen")
++        local lipc_handle = lipc.init("org.yomigami.screen")
+         if lipc_handle then
+             local orientation_code = lipc_handle:get_string_property(
+                 "com.lab126.winmgr", "accelerometer")
+@@ -1601,7 +1601,7 @@
+     --       since they're only exposed inside the stock reader, and not the Home/KUAL Booklets.
+     local haslipc, lipc = pcall(require, "liblipclua")
+     if haslipc then
+-        local lipc_handle = lipc.init("com.github.koreader.screen")
++        local lipc_handle = lipc.init("org.yomigami.screen")
+         if lipc_handle then
+             local orientation_code = lipc_handle:get_string_property(
+                 "com.lab126.winmgr", "accelerometer")
+@@ -1669,7 +1669,7 @@
+     --- @note The same quirks as on the Oasis 2 apply ;).
+     local haslipc, lipc = pcall(require, "liblipclua")
+     if haslipc then
+-        local lipc_handle = lipc.init("com.github.koreader.screen")
++        local lipc_handle = lipc.init("org.yomigami.screen")
+         if lipc_handle then
+             local orientation_code = lipc_handle:get_string_property(
+                 "com.lab126.winmgr", "accelerometer")
+@@ -1851,7 +1851,7 @@
+     --- @note The same quirks as on the Oasis 2 and 3 apply ;).
+     local haslipc, lipc = pcall(require, "liblipclua")
+     if haslipc then
+-        local lipc_handle = lipc.init("com.github.koreader.screen")
++        local lipc_handle = lipc.init("org.yomigami.screen")
+         if lipc_handle then
+             local orientation_code = lipc_handle:get_string_property(
+                 "com.lab126.winmgr", "accelerometer")
+@@ -1914,7 +1914,7 @@
+     --- @note This is an assumption carried over from the KS(2) -HD
+     local haslipc, lipc = pcall(require, "liblipclua")
+     if haslipc then
+-        local lipc_handle = lipc.init("com.github.koreader.screen")
++        local lipc_handle = lipc.init("org.yomigami.screen")
+         if lipc_handle then
+             local orientation_code = lipc_handle:get_string_property(
+                 "com.lab126.winmgr", "accelerometer")
+@@ -1977,7 +1977,7 @@
+     --- @note This is an assumption carried over from the KS(2) -HD
+     local haslipc, lipc = pcall(require, "liblipclua")
+     if haslipc then
+-        local lipc_handle = lipc.init("com.github.koreader.screen")
++        local lipc_handle = lipc.init("org.yomigami.screen")
+         if lipc_handle then
+             local orientation_code = lipc_handle:get_string_property(
+                 "com.lab126.winmgr", "accelerometer")

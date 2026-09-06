@@ -1,0 +1,8 @@
+{
+  "items": [
+    {
+      "name": "Start Yomigami",
+      "action": "/mnt/us/yomigami/launch.sh --kual --asap"
+    }
+  ]
+}

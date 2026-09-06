@@ -1,0 +1,138 @@
+# Verification record
+
+## Passed locally
+
+- Nine native core test groups: page-two regression, repeated end events,
+  backward navigation/resume/jumps, one-page boundaries, tall-page panning,
+  natural sort, progress round-trip/corrupt-state preservation, copy-only import,
+  rendering every page of five PDFs and one 12-page CBZ, module isolation.
+- Native UI test: cover layout, all 12 page turns, final-page confirmation,
+  saved-page reopen, options/menu dismissal, filters, keyboard dialog,
+  nested source-ID API schema, PDF panning, sleep flag lifecycle.
+- Verified no `apps/reader/*` or plugin-loader module loaded in those UI flows.
+- Actual independent macOS Rakuyomi server: loopback startup, 528 source records,
+  source installation, live WeebCentral search returning Sakamoto-related results.
+- MANGA Plus installation succeeded but the tested query returned no results;
+  this is not claimed as a working search integration for that source.
+- Kindle read-only inspection: launcher presence, KOReader version, Rakuyomi
+  build info and historical chapter-switch logs.
+
+## Pending physical confirmation
+
+Real manga chapter navigation, sleep/wake and the new toolbar controls
+on Paperwhite 12 / firmware 5.18.5.0.1. Desktop SDL tests cannot establish
+those hardware results. Device source downloading also needs confirmation.
+
+The macOS native runtime is the upstream bundled 2024.11-283 emulator; the Kindle
+runtime is pinned separately to v2026.07.1. Core FFI interfaces are exercised on
+macOS, but the actual ARM/Linux bundle must pass on-device checks.
+
+## First physical test and revision
+
+The user confirmed Yomigami opens on the Kindle. They reported overlapping text,
+requested a visible exit control and smoother page turning. Font:getFace already
+applies screen scaling, while the application had scaled the requested size first.
+This doubled scaling on the high-resolution Kindle (the 600-pixel emulator hid the error).
+Version 0.1.1 removes that duplicate scaling and has been visually checked at
+1264x1680. A visible library exit control is included. Page turns use partial
+refresh, a full refresh after six turns, and the PW6 MTK native swipe animation
+when supported. The user subsequently confirmed readable text and beautiful
+page turning on the Kindle.
+
+Additional local checks: real WeebCentral search, 273 chapter records, a completed
+chapter download with an empty page-error list; installer tests for missing
+payload, bad checksum, existing-folder preservation, extraction and repeat launch.
+The first device archive and scriptlet were read back byte-for-byte and hashed
+successfully before the user unplugged the device.
+
+The first-run hardware log identifies KindlePaperWhite6 and an actual framebuffer
+of 1272x1696. The corrected layout is also tested at that exact size. The log shows
+a normal exit code 0 and the launcher log shows framework services resumed.
+A real source chapter downloaded successfully and all 58 pages rendered locally.
+The 0.1.1 update archive and scriptlet were also read back and hash-verified.
+
+## Version 0.1.2
+
+Added separate Library and Quit controls in a hideable reading toolbar. The
+center tap restores controls in full-screen mode. Native UI and core regressions
+pass, including toolbar visibility, full-screen page turns, saved-page reopen,
+and separate Library/Quit callbacks at the device framebuffer size 1272x1696.
+A Sakamoto Days chapter from the earlier source download is transferred separately
+for the user-requested hardware test; it is not included in distributable packages.
+Hardware toolbar and real-chapter confirmation remain pending.
+
+## Version 0.2.0
+
+- Native core/UI/toolbar regressions pass at 1272x1696.
+- Actual MuPDF pinch-scale rendering and horizontal/vertical panning remain
+  bounded to the screen buffer. Gesture delivery itself needs device testing.
+- Lighting panel tested with a simulated device power interface; actual Kindle
+  brightness/warmth values still need physical confirmation.
+- Ribbon bookmarks, rename, delete/restore, persistent queue deduplication and
+  completed-job metadata pass native tests.
+- Live requests run in child processes and return through the native UI loop.
+- A real two-chapter queue completed with saved chapter IDs and grouping.
+- Eleven bundled English-capable adapters returned search results: Weeb Central,
+  MangaDex, Asura Scans, Flame Comics, Guya, TCB Scans, Magus Manga, Hive Scans,
+  Vortex Scans, Danke fürs Lesen and MangaRead.org. This is a tested selection
+  from the user's list, not a global popularity ranking. Comix errored; Aqua,
+  Drake and MangaKakalot returned no results for the tested queries.
+- Single-run desktop comparison, same 58-page chapter and fresh download folders:
+  4 concurrent page requests: 5.10 s; 8: 3.31 s. Both had zero page errors.
+  Order/CDN cache/network variability were not controlled. This is not a measured
+  improvement over the user's Rakuyomi installation or a Kindle speed guarantee.
+- Upgrade preparation preserves page bookmarks, aliases and existing source
+  preferences; invalid JSON aborts before applying data changes.
+- Device validation of all new 0.2.0 controls remains pending.
+
+## Version 0.2.1
+
+Direct Options sliders for brightness, warmth and contrast; centered custom
+button and toolbar labels; designed offline chapter menu positioned at the current
+bookmark; original 600x916 launcher cover. The aspect ratio matches the inspected
+KOReader launcher cover (938x1432) to within rounding.
+
+Native tests verify contrast alters grayscale rendering, controls stay inside the
+1272x1696 framebuffer, chapter pagination opens at the saved chapter, and existing
+reader/library/queue regressions pass. Screens were rendered and visually inspected.
+Actual Kindle cover-cache refresh and appearance remain pending user confirmation.
+
+## Version 0.3.0
+
+- Native discovery, chapter selection and live progress layouts inspected at 1272x1696.
+- Live multi-source search selected Sakamoto Days and fetched 273 chapters.
+- Synthetic blank and edge-marked crop tests pass; actual MuPDF crop render enlarges
+  content while preserving safety padding. Contrast regression caught and fixed.
+- Cache hit verified on the next page; crop invalidation and release on close pass.
+  Cache allocation capped at 32 MB. Prefetch runs one page per scheduled UI idle
+  callback; an individual decode can still occupy the UI thread briefly.
+- Desktop fixture benchmark: 15 repeats averaged 2.64 ms uncached and 0.02 ms cached.
+  This excludes e-ink refresh and is not a Kindle latency measurement.
+- Queue scheduling reduced from 2 s to 0.2 s with immediate slot refill and three
+  active chapter slots. Source bandwidth/rate limits still bound transfer speed.
+- Hardware validation of 0.3.0 remains pending.
+
+## Version 0.4.0
+
+- Gutenberg search via Gutendex, live Alice EPUB download and native EPUB rendering passed.
+- Live Internet Archive search returned public-PDF matches; full Archive downloads remain unverified.
+- Hostname-verified HTTPS downloaded and validated the W3C one-page PDF fixture.
+- HTTPS redirects discard prior response bodies and do not forward cookies to other hosts.
+- Z-Library API protocol reviewed against ZlibraryKO/zlibrary.koplugin; own adapter uses
+  rpc.php account login, eapi search and eapi file links. Mock session, rejection and URL
+  handling checked. No user account was supplied; live authenticated search/download remains unverified.
+- PDFDrive URL returned 403; its card explains that integration is unavailable. No working
+  PDFDrive downloader is claimed. The original z-library.bz website returned a browser challenge;
+  the account integration allows the reader to enter their current HTTPS server.
+- Native UI, chapter boundaries, resume, lighting/contrast, options, toolbar, crop, prefetch,
+  download queue and book-browser regression suites pass at 1272x1696.
+- Clear search invalidates in-flight callbacks; idle progress causes no recurring screen refresh.
+  Progress updates use a bounded fast-refresh region. Actual Kindle flashing remains to be checked.
+- Auto-crop fills viewport width and preserves vertical navigation instead of fitting tall pages
+  back inside the whole viewport. Crop-width regression passes.
+- EPUB uses MuPDF reflow at a fixed 600x800 / 24 em layout so bookmarks remain stable;
+  font/layout customization is not implemented. DRM-protected books are not supported.
+- Book downloads run in background workers with a 128 MB size cap and 20-minute ceiling;
+  quitting the app cancels active book transfers. Manga queue remains persistent.
+- Sign-in password is used in memory only; only server/session tokens are saved locally.
+  These tokens are not encrypted on Kindle storage. Sign out removes the saved session.

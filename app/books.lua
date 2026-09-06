@@ -1,0 +1,87 @@
+-- SPDX-License-Identifier: AGPL-3.0-or-later
+local UI=require('ui/uimanager')
+local BB=require('ffi/blitbuffer')
+local R=require('requests')
+local B=require('discover'):extend{}
+function B:init()
+    self.book_mode=true;self.owner.downloaded_books=self.owner.downloaded_books or {}
+    require('discover').init(self)
+end
+function B:search()
+    if not self.query or self.query=='' then return end
+    self:fetch('@books/search','POST',{root=self.owner.root,source=self.source or 'gutenberg',query=self.query,page=self.remote_page},function(data)self.results=data.books;self.has_more=data.more;self.page=1 end)
+end
+function B:chooseSource(source)
+    self.request_generation=(self.request_generation or 0)+1;self.source=source;self.query=nil;self.results=nil;self.error=nil;self.page=1;UI:setDirty(self,'full')
+    self.owner:input('Search '..(source=='gutenberg' and 'Gutenberg ebooks' or source=='zlib' and 'Z-Library' or 'Internet Archive PDFs'),function(q)if not self.closed then self.query=q;self.remote_page=1;self:search()end end)
+end
+function B:download(book)
+    local a=self.owner;local key=(book.source or '')..':'..(book.url or book.id)
+    if a.downloaded_books[key] then return a:message('This download is already running.')end
+    a.downloaded_books[key]=true;a:message('Downloading '..book.title..'. You can keep reading.')
+    R:send(a.root,'@books/download','POST',{root=a.root,book=book},function(ok,result)
+        a.downloaded_books[key]=nil
+        if ok then a:scan();a:message('Added to library: '..book.title)else a:message(result)end
+    end)
+end
+function B:zlibrary()
+    local a=self.owner
+    local function signin()
+        a:input('Your Z-Library HTTPS server address',function(base)
+            a:input('Z-Library email',function(email)
+                a:input('Z-Library password',function(password)
+                    a:message('Signing in…')
+                    R:send(a.root,'@books/login','POST',{root=a.root,base=base,email=email,password=password},function(ok,result)
+                        if ok and not self.closed then self:chooseSource('zlib')else a:message(ok and 'Signed in.' or result)end
+                    end)
+                end,true)
+            end)
+        end)
+    end
+    a:menu('Z-Library',{
+        {text='Search PDF & EPUB',callback=function()self:chooseSource('zlib')end},
+        {text='Sign in / change server',callback=signin},
+        {text='Sign out',callback=function()os.remove(a.root..'/zlibrary-session.json');a:message('Signed out.')end},
+    })
+end
+function B:paintTo(bb)
+    local a=self.owner;local s=function(n)return a:s(n)end;local p=s(28);local w=a.w-2*p
+    self.hits={};bb:paintRect(0,0,a.w,a.h,BB.COLOR_WHITE)
+    a:label(bb,'PDFs & ebooks',p,s(32),28,true,w-s(70));self:button(bb,'close','×',a.w-s(74),s(26),s(46),s(42),function()self:onClose()end)
+    a:label(bb,'Stories, ideas and entire worlds.',p,s(82),13,false,w)
+    if not self.query then
+        local rows={
+            {'gutenberg','Project Gutenberg','EPUB classics · Free downloads',function()self:chooseSource('gutenberg')end},
+            {'archive','Internet Archive','Publicly downloadable PDFs',function()self:chooseSource('archive')end},
+            {'url','Download from a link','Direct HTTPS links to PDF or EPUB files',function()
+                a:input('Direct PDF or EPUB HTTPS link',function(url)
+                    local ext=url:lower():match('%.(epub)') and 'EPUB' or 'PDF'
+                    a:input('Book title',function(title)self:download{title=title,url=url,format=ext}end)
+                end)
+            end},
+            {'zlib','Z-Library','PDF & EPUB · Sign in with your account',function()self:zlibrary()end},
+            {'pdfdrive','PDFDrive','Access blocked · Integration unavailable',function()a:message('pdfdrive.webs.nf returned HTTP 403. You can import a downloaded file or use a direct book link.')end},
+        }
+        for i,row in ipairs(rows)do local y=s(140)+(i-1)*s(102)
+            bb:paintRect(p,y,w,s(86),BB.Color8(247));bb:paintBorder(p,y,w,s(86),1,BB.Color8(210))
+            a:centerLabel(bb,row[2],p,y+s(9),w,s(33),18,true);a:centerLabel(bb,row[3],p,y+s(47),w,s(25),12,false)
+            self:hit(row[1],p,y,w,s(86),row[4])
+        end
+        return
+    end
+    self:button(bb,'search',self.query,p,s(118),w-s(56),s(48),function()self:chooseSource(self.source)end)
+    self:button(bb,'clear','×',a.w-p-s(46),s(118),s(46),s(48),function()self.query=nil;self.results=nil;self.request_generation=(self.request_generation or 0)+1;self.loading=false;UI:setDirty(self,'full')end)
+    a:label(bb,self.loading and 'Searching…' or self.error and 'Unavailable · Try again' or 'Tap a book to download',p,s(190),12,false,w)
+    local items=self.results or {}
+    for slot=1,self.per do local index=(self.page-1)*self.per+slot;local book=items[index]
+        if book then local y=s(230)+(slot-1)*s(76)
+            bb:paintRect(p,y,w,s(66),BB.Color8(247));a:centerLabel(bb,book.title,p,y+s(5),w,s(30),16,true)
+            a:centerLabel(bb,book.format..' · '..(book.author or 'Internet Archive'),p,y+s(36),w,s(24),11,false)
+            self:hit('book-'..index,p,y,w,s(66),function()self:download(book)end)
+        end
+    end
+    local foot=a.h-s(68);self:button(bb,'previous','‹',p,foot,s(48),s(40),function()self:onPrevious()end)
+    a:centerLabel(bb,self.page..' / '..math.max(1,math.ceil(#items/self.per)),p+s(70),foot,w-s(140),s(40),13,false)
+    self:button(bb,'next',self.error and 'Retry' or '›',a.w-p-s(60),foot,s(60),s(40),function()if self.error then self:search()else self:onNext()end end)
+end
+return B

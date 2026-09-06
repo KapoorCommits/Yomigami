@@ -1,0 +1,14 @@
+{
+  "app": "0.4.0-alpha",
+  "target": "kindlehf",
+  "firmware_test_target": "5.18.5.0.1",
+  "runtime_release": "v2026.07.1",
+  "source_engine_release": "v1.41.6",
+  "inputs": {
+    "koreader-kindlehf-v2026.07.1.zip": "3343a916d12f36c01b59df1f65bd83ff5616e6c2a4dfbe919e7fa1400b8b1bbb",
+    "rakuyomi-kindlehf-v1.41.6.zip": "cc225cb99297054bb8eeb7cb972808009539434558f83cfbfe1634ae2b6f6768",
+    "rakuyomi-macos-v1.41.6.zip": "da04d99fd46cac1fd323f83ffab7bdfb2eafe993e630e7a25fb7294edc7bc768"
+  },
+  "koreader_commit": "9192014d8bd82a91dc1012473be0f238dedfdb54",
+  "rakuyomi_commit": "c79563b29e18a7c373d780a4af2ce1961b6184a6"
+}
