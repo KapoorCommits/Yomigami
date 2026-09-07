@@ -36,3 +36,8 @@ assert(not pcall(T.transfer,root,job));assert(lfs.attributes(part,'size')==count
 H.stream=stream;T.free=free;os.remove(part);os.remove(mp)
 app.state.book_settings={};app:restoreReadingDefaults();app:save()
 print('PASS per-book isolation/reopen, storage sums, partial resume, ignored Range restart, invalid Range and low-space protection')
+
+app.state.book_queue={{id='ui-test',status='paused',book={title='Test transfer'},total=1048576}}
+app:bookDownloadsMenu();local list=UI:getTopmostVisibleWidget()
+local canvas=BB.new(app.w,app.h,BB.TYPE_BB8);list:paintTo(canvas);canvas:writePNG(app.root..'/downloads-050.png');canvas:free();list.tick();list:onClose()
+print('PASS download list opens, paints, polls and closes')

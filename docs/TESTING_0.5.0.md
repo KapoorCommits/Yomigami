@@ -3,7 +3,7 @@
 This is a device test candidate for the Paperwhite 12 running firmware 5.18.5.0.1.
 The public 0.4.0 release remains available while the new features receive hardware checks.
 
-1. Quit Yomigami before installing. Copy `yomigami-update-0.5.0.tar.gz` to Kindle storage
+1. Quit Yomigami before installing. Copy `yomigami-update-0.5.0-rc1.tar.gz` to Kindle storage
    and `Update Yomigami 0.5.0.sh` into `documents`. Disconnect USB and open the update book.
    The updater backs up app data/settings and keeps the library.
 2. In the library, choose **+ → Storage**. Check book sizes and the manga chapter total.

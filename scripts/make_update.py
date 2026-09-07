@@ -2,7 +2,7 @@ from pathlib import Path
 import hashlib,tarfile,base64,json
 r=Path(__file__).resolve().parents[1]
 version='0.5.0'
-archive=r/f'dist/yomigami-update-{version}.tar.gz'
+archive=r/f'dist/yomigami-update-{version}-rc1.tar.gz'
 icon=base64.b64encode((r/'assets/icon.png').read_bytes()).decode()
 launcher=(r/'launcher/Yomigami.sh').read_text().replace('# Icon: /mnt/us/yomigami/icon.png','# Icon: data:image/png;base64,'+icon)
 (r/'build/Yomigami.sh').write_text(launcher)
@@ -19,7 +19,7 @@ script='''#!/bin/sh
 # DontUseFBInk
 set -eu
 ROOT=/mnt/us/yomigami
-ARCHIVE=/mnt/us/yomigami-update-0.5.0.tar.gz
+ARCHIVE=/mnt/us/yomigami-update-0.5.0-rc1.tar.gz
 exec >>/mnt/us/yomigami-update.log 2>&1
 if [ ! -f "$ROOT/app/main.lua" ]; then eips 1 2 "Install Yomigami first."; exit 1; fi
 if [ -d /var/tmp/yomigami.lock ]; then eips 1 2 "Close Yomigami before updating."; exit 1; fi

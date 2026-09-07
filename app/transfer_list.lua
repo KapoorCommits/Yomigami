@@ -5,7 +5,7 @@ function V:init()
     self.per=6;self.page=1;require('discover').init(self)
     self.tick=function()if self.closed then return end
         local key={};for _,j in ipairs(self.owner.state.book_queue)do local _,p=T.paths(self.owner.root,j.id);local m=Store.load(p,{});key[#key+1]=j.status..':'..math.floor((m.bytes or 0)/1048576)..':'..tostring(m.total)end
-        key=table.concat(key,'|');if key~=self.previous then self.previous=key;if UI:getTopmostVisibleWidget()==self then UI:setDirty(self,'fast')endend;UI:scheduleIn(2,self.tick)
+        key=table.concat(key,'|');if key~=self.previous then self.previous=key;if UI:getTopmostVisibleWidget()==self then UI:setDirty(self,'fast')end end;UI:scheduleIn(2,self.tick)
     end;UI:scheduleIn(2,self.tick)
 end
 function V:onCloseWidget()self.closed=true;UI:unschedule(self.tick)end

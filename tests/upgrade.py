@@ -7,7 +7,7 @@ with tempfile.TemporaryDirectory() as t:
  settings={'languages':['en'],'source_settings':{'custom':{'keep':True}},'concurrent_requests_pages':5}
  state={'progress':{str(sample):{'page':17,'count':58}},'aliases':{'existing':'Original title'},'book_settings':{'sample':{'contrast':1.4}},'book_queue':[{'id':'retained','status':'queued'}]}
  (root/'data/state.json').write_text(json.dumps(state));(root/'data/sources/settings.json').write_text(json.dumps(settings))
- with tarfile.open(r/'dist/yomigami-update-0.5.0.tar.gz') as a:a.extractall(stage,filter='data')
+ with tarfile.open(r/'dist/yomigami-update-0.5.0-rc1.tar.gz') as a:a.extractall(stage,filter='data')
  runtime=r/'build/macos/KOReader.app/Contents/koreader'
  subprocess.run([str(runtime/'luajit'),str(stage/'upgrade_data.lua'),str(root),str(stage)],cwd=runtime,check=True,stdout=subprocess.DEVNULL)
  new=json.loads((stage/'state.json').read_text());cfg=json.loads((stage/'settings.json').read_text())
