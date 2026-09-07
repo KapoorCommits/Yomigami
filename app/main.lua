@@ -27,6 +27,7 @@ function App:init()
     self.state.progress=self.state.progress or {}
     self.state.downloads=self.state.downloads or {}
     self.state.series=self.state.series or {}
+    self:initBookPreferences()
     self.jobs={}
     self.state.aliases=self.state.aliases or {}
     self.state.trash=self.state.trash or {}
@@ -35,10 +36,12 @@ function App:init()
     self:scan()
     if (Device.screen.night_mode or false)~=(self.state.dark_mode or false) then Device.screen:toggleNightMode() end
     self:startDownloads()
+    self:startBookDownloads()
 end
 function App:s(n) return math.floor(n*self.scale+.5) end
 function App:save()
     if self.state_error then return nil,self.state_error end -- Never overwrite an unreadable original.
+    self:rememberReadingSettings()
     local ok,err=Store.save(self.root..'/state.json',self.state)
     if not ok then self:message('Progress could not be saved: '..tostring(err)) end
     return ok,err
@@ -192,11 +195,11 @@ function App:openBook(book,password)
         return self:message('Unable to open '..book.title..'\n'..tostring(document))
     end
     self:clearPageCache()
-    if self.doc then self.doc:close() end
+    if self.doc then self:saveProgress();self.doc:close() end
     self:clearCovers();self.doc=document;self.book=book
     local saved=self.state.progress[book.path]
     self.nav=Nav.new(document.count,saved and saved.page)
-    self.screen_name='reader';self.boundary=false;self.chrome_hidden=false;self.zoom=1;self.pan_x=0
+    self.screen_name='reader';self.boundary=false;self.chrome_hidden=false;self.zoom=self:loadBookSettings();self.pan_x=0
     self:renderPage();self:saveProgress();self:refresh()
 end
 function App:renderPageUncached()
@@ -290,7 +293,7 @@ function App:closeBook()
     self:saveProgress()
     if self.page_image then self.page_image:free();self.page_image=nil end
     if self.doc then self.doc:close();self.doc=nil end
-    self.book=nil;self.screen_name='library';self:refresh()
+    self.book=nil;self:restoreReadingDefaults();self.screen_name='library';self:refresh()
 end
 function App:onTap(_,g)
     for _,hit in ipairs(self.hits) do
@@ -310,8 +313,8 @@ end
 function App:onForward() return self:turn(1) end
 function App:onBackward() return self:turn(-1) end
 function App:onBack() if self.doc then self:closeBook() else self:quit() end;return true end
-function App:quit() self:clearPageCache();self:stopDownloads();require('requests'):close();self:saveProgress();self:clearCovers();if self.doc then self.doc:close();self.doc=nil end;UI:quit() end
-function App:onSuspend() self:saveProgress() end
+function App:quit() if self.wifi_receiver then self.wifi_receiver:onCloseWidget()end;self:stopBookDownloads();self:clearPageCache();self:stopDownloads();require('requests'):close();self:saveProgress();self:clearCovers();if self.doc then self.doc:close();self.doc=nil end;UI:quit() end
+function App:onSuspend() if self.wifi_receiver then self.wifi_receiver:onClose()end;self:saveProgress() end
 function App:onCloseWidget() self:saveProgress() end
 function App:input(title,callback,password)
     local Dialog=require('ui/widget/inputdialog');local dialog
@@ -340,10 +343,13 @@ function App:readerOptions() require('options').show(self) end
 function App:libraryActions()
     self:menu('Your library',{
         {text='Import PDF, EPUB or CBZ',callback=function() self:chooseFile('/mnt/us/documents') end},
+        {text='Storage',callback=function()self:showStorage()end},
+        {text='Book downloads',callback=function()self:bookDownloadsMenu()end},
+        {text='Send to Yomigami',callback=function()require('wifi_receive').show(self)end},
         {text='Recently deleted',callback=function() self:trashMenu() end},
         {text='Options',callback=function() self:readerOptions() end},
         {text='Rescan library',callback=function() self:scan() end},
-        {text='About Yomigami',callback=function() self:message('Yomigami 0.4.0 alpha\nIndependent reader and library.\nPrivate KOReader-derived runtime and MuPDF; Rakuyomi source engine.\nAGPL-3.0. Device validation pending.') end},
+        {text='About Yomigami',callback=function() self:message('Yomigami 0.5.0 alpha\nIndependent reader and library.\nPrivate KOReader-derived runtime and MuPDF; Rakuyomi source engine.\nAGPL-3.0. Device validation pending.') end},
         {text='Exit to Kindle',callback=function() self:quit() end},
     })
 end
@@ -403,6 +409,9 @@ function App:showSources() UI:show(require('discover'):new{owner=self}) end
 function App:searchManga(query,page) UI:show(require('discover'):new{owner=self,query=query,remote_page=page or 1,autosearch=true}) end
 function App:mangaResults(data,title,more) UI:show(require('discover'):new{owner=self,results=data,query=title,more_callback=more}) end
 function App:mangaDetails(m) UI:show(require('discover'):new{owner=self,manga=m}) end
+require('book_preferences')(App)
+require('book_queue')(App)
+require('storage_view')(App)
 require('reading_features')(App)
 require('downloads')(App)
 require('prefetch')(App)

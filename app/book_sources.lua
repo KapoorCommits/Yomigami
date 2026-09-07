@@ -50,27 +50,4 @@ function B.resolve(book,root)
     assert(selected,'No publicly downloadable PDF is available.')
     return 'https://archive.org/download/'..E(book.id)..'/'..E(selected.name)
 end
-function B.download(root,book)
-    local name=(book.title or 'Book'):gsub('[/%c\\:*?"<>|]',' '):sub(1,120)
-    local ext=book.format=='EPUB' and '.epub' or '.pdf';local dest=root..'/library/'..name..ext
-    local lfs=require('libs/libkoreader-lfs');assert(not lfs.attributes(dest),'This book is already in the library.')
-    local _,free=require('ffi/util').df(root);assert(free>256*1024*1024,'Not enough free space.')
-    local part=dest..'.part';local file=assert(io.open(part,'wb'));local bytes=0
-    local ok,err=pcall(function()
-        local url,headers=B.resolve(book,root)
-        B.get(url,function(chunk,error)
-            if error then return nil,error end
-            if chunk then
-                bytes=bytes+#chunk;if bytes>128*1024*1024 then return nil,'Book exceeds 128 MB download limit.'end
-                return file:write(chunk) and 1
-            end
-            return 1
-        end,function()file:close();file=assert(io.open(part,'wb'));bytes=0 end,headers)
-    end)
-    file:close()
-    if not ok then os.remove(part);error(err)end
-    local valid,doc=pcall(require('document').open,part)
-    if not valid then os.remove(part);error('The link did not return a readable book.')end
-    doc:close();assert(os.rename(part,dest));return dest
-end
 return B

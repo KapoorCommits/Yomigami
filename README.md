@@ -102,3 +102,5 @@ If Yomigami earns a place on your Kindle, a star helps other readers find it.
 ## License
 
 Yomigami application code is **[AGPL-3.0-or-later](LICENSE)**. Upstream components retain their own licenses and notices. You can inspect, modify and share the code under the applicable license terms.
+
+Development candidate: [Try the 0.5.0 storage, reading settings and Wi-Fi transfer features](docs/TESTING_0.5.0.md). Device verification is pending.

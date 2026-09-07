@@ -16,12 +16,12 @@ function B:chooseSource(source)
     self.owner:input('Search '..(source=='gutenberg' and 'Gutenberg ebooks' or source=='zlib' and 'Z-Library' or 'Internet Archive PDFs'),function(q)if not self.closed then self.query=q;self.remote_page=1;self:search()end end)
 end
 function B:download(book)
-    local a=self.owner;local key=(book.source or '')..':'..(book.url or book.id)
-    if a.downloaded_books[key] then return a:message('This download is already running.')end
-    a.downloaded_books[key]=true;a:message('Downloading '..book.title..'. You can keep reading.')
-    R:send(a.root,'@books/download','POST',{root=a.root,book=book},function(ok,result)
-        a.downloaded_books[key]=nil
-        if ok then a:scan();a:message('Added to library: '..book.title)else a:message(result)end
+    local a=self.owner;local T=require('book_transfer');a:message('Checking download size…')
+    R:send(a.root,'@books/probe','POST',{root=a.root,book=book},function(ok,info)
+        if self.closed then return end
+        if not ok then return a:message('Could not check the source: '..tostring(info))end
+        if info.total and (info.total>info.limit or info.total+T.reserve>info.free)then return a:message('This book needs '..T.format(info.total)..'. Available: '..T.format(info.free)..'. Open + → Storage to free space. File limit: '..T.format(info.limit))end
+        UI:show(require('ui/widget/confirmbox'):new{text=book.title..'\n'..(info.total and 'Download size: '..T.format(info.total) or 'The source does not report a total size. Usage will appear as it downloads.')..'\nFree storage: '..T.format(info.free),ok_text='Download',ok_callback=function()a:queueBook(book,info)end})
     end)
 end
 function B:zlibrary()

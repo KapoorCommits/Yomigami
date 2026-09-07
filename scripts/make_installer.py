@@ -2,7 +2,7 @@
 from pathlib import Path
 import hashlib,base64,shutil
 ROOT=Path(__file__).resolve().parents[1]
-archive=ROOT/'dist/yomigami-0.4.0.tar.gz'
+archive=ROOT/'dist/yomigami-0.5.0.tar.gz'
 digest=hashlib.sha256(archive.read_bytes()).hexdigest()
 icon=base64.b64encode((ROOT/'assets/icon.png').read_bytes()).decode()
 script='''#!/bin/sh
@@ -11,7 +11,7 @@ script='''#!/bin/sh
 # Icon: data:image/png;base64,__ICON__
 # DontUseFBInk
 ROOT=/mnt/us/yomigami
-ARCHIVE=/mnt/us/yomigami-0.4.0.tar.gz
+ARCHIVE=/mnt/us/yomigami-0.5.0.tar.gz
 EXPECTED=__SHA__
 if [ ! -x "$ROOT/launch.sh" ]; then
     exec >>/mnt/us/yomigami-install.log 2>&1

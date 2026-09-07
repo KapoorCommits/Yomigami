@@ -14,14 +14,14 @@ with tempfile.TemporaryDirectory(prefix='yomigami-installer-test-') as tmp:
     def run():return subprocess.run(['sh',str(installer)],env=env,capture_output=True,text=True)
     assert run().returncode==1 and not (usb/'yomigami').exists()
     print('PASS missing payload refuses installation')
-    (usb/'yomigami-0.4.0.tar.gz').write_bytes(b'bad archive')
+    (usb/'yomigami-0.5.0.tar.gz').write_bytes(b'bad archive')
     assert run().returncode==1 and not (usb/'yomigami').exists()
     print('PASS checksum rejects incomplete transfer')
     (usb/'yomigami').mkdir();(usb/'yomigami/sentinel').write_text('preserve')
     assert run().returncode==1 and (usb/'yomigami/sentinel').read_text()=='preserve'
     print('PASS existing folder protected')
     shutil.rmtree(usb/'yomigami')
-    shutil.copyfile(ROOT/'dist/yomigami-0.4.0.tar.gz',usb/'yomigami-0.4.0.tar.gz')
+    shutil.copyfile(ROOT/'dist/yomigami-0.5.0.tar.gz',usb/'yomigami-0.5.0.tar.gz')
     assert run().returncode==0
     assert (usb/'yomigami/runtime/yomigami.lua').exists()
     assert (usb/'yomigami/data/library/Reader Test.cbz').exists()

@@ -4,7 +4,7 @@
 local S={}
 function S:setup(_,message)
     self.message=message or 'Yomigami\nResting. Your place is saved.'
-    if self.app then self.app:saveProgress() end
+    if self.app then if self.app.wifi_receiver then self.app.wifi_receiver:onClose()end;self.app:saveProgress() end
 end
 function S:show()
     local Device=require('device');Device.screen_saver_mode=true

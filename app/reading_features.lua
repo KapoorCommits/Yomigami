@@ -139,7 +139,7 @@ end
 function App:setZoom(value)
     if not self.doc then return end
     self.zoom=math.max(1,math.min(4,value));self.nav.offset=0;self.pan_x=0
-    self:renderPage();self:refresh()
+    self:renderPage();self:save();self:refresh()
 end
 function App:onSpread(_,g)
     if self.doc then self:setZoom((self.zoom or 1)*(g.start_span and g.start_span>0 and g.span/g.start_span or 1.5)) end

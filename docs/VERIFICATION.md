@@ -136,3 +136,21 @@ Actual Kindle cover-cache refresh and appearance remain pending user confirmatio
   quitting the app cancels active book transfers. Manga queue remains persistent.
 - Sign-in password is used in memory only; only server/session tokens are saved locally.
   These tokens are not encrypted on Kindle storage. Sign out removes the saved session.
+
+## Version 0.5.0 test candidate
+
+- PDF/EPUB queue persists across exits, retries temporary failures with bounded backoff,
+  supports pause/retry/cancel, and preserves partial downloads. Range resume requires
+  server validators and matching byte ranges; unsupported servers restart safely.
+- Download confirmation shows server-reported size and available space. Unknown sizes
+  remain explicitly unknown. Files are limited to 512 MB with a 64 MB free-space reserve.
+- Native regression tests cover interrupted/resumed transfers, ignored Range responses,
+  invalid ranges, low space, queue recovery, and isolation of per-book reading settings.
+- Library Storage sums real book/chapter bytes and reports partial downloads and trash.
+  Manga sources do not expose reliable total sizes before downloading.
+- Send to Yomigami uses a temporary local HTTP server and session QR code. Native desktop
+  integration tests verify exact uploaded PDF bytes, invalid-file rejection, token/origin
+  checks, path traversal rejection and overwrite protection. Closing the receiver stops
+  its server; sessions expire after 30 minutes. Use only a trusted local Wi-Fi network.
+- Live HTTPS PDF probe/download and native QR rendering passed on macOS. Kindle Wi-Fi
+  reachability, QR transfer from a phone, and new storage/preferences UI need device checks.

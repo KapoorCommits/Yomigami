@@ -12,7 +12,7 @@ function R:send(root,path,method,body,callback)
         Store.save(file,{ok=ok,data=ok and data or tostring(data)})
     end)
     if not pid then return callback(false,'Could not start source request.') end
-    local job={pid=pid,file=file,started=os.time(),timeout=path=='@books/download' and 1200 or 95};self.active[pid]=job
+    local job={pid=pid,file=file,started=os.time(),timeout=path=='@books/transfer' and 1200 or 95};self.active[pid]=job
     local function poll()
         if not self.active[pid] then return end
         if util.isSubProcessDone(pid) then
@@ -25,6 +25,11 @@ function R:send(root,path,method,body,callback)
         else UI:scheduleIn(.2,poll) end
     end
     UI:scheduleIn(.1,poll)
+    return pid
+end
+function R:cancel(pid)
+    local job=self.active[pid];if not job then return end
+    util.terminateSubProcess(pid);util.isSubProcessDone(pid,true);self.active[pid]=nil;os.remove(job.file)
 end
 function R:close()
     for pid,job in pairs(self.active) do util.terminateSubProcess(pid);util.isSubProcessDone(pid,true);os.remove(job.file) end
