@@ -61,11 +61,13 @@ function O:paintTo(bb)
         choice('animation','Page animation: '..(a.state.animation==false and 'Off' or 'On'),1,4,function()a.state.animation=a.state.animation==false;a:save();dirty()end)
         choice('crop','Auto-crop: '..(a.state.autocrop and 'On' or 'Off'),2,4,function()a.state.autocrop=not a.state.autocrop;a:renderPage();a:save();dirty()end,a.state.autocrop)
         choice('prefetch','Pre-render: '..(a.state.prefetch==false and 'Off' or 'On'),1,5,function()a.state.prefetch=a.state.prefetch==false;a:clearPageCache();a:renderPage();a:save();dirty()end,a.state.prefetch~=false)
+        choice('more','Text, notes & controls',2,5,function()self:onClose();a:extraReaderOptions()end)
         choice('theme',a.state.dark_mode and 'Dark mode' or 'Light mode',1,6,function()a.state.dark_mode=not a.state.dark_mode;require('device').screen:toggleNightMode();a:save();UI:setDirty(self,'full')end,a.state.dark_mode)
         choice('done','Done',2,6,function()self:onClose()end,true)
     else
         self:button(bb,'theme',a.state.dark_mode and 'Dark mode' or 'Light mode',s(28),y,a.w-s(56),h,function()a.state.dark_mode=not a.state.dark_mode;require('device').screen:toggleNightMode();a:save();UI:setDirty(self,'full')end)
-        self:button(bb,'done','Done',s(28),y+s(56),a.w-s(56),h,function()self:onClose()end,true)
+        self:button(bb,'more','Refresh & sleep settings',s(28),y+s(56),a.w-s(56),h,function()self:onClose();a:extraReaderOptions()end)
+        self:button(bb,'done','Done',s(28),y+s(112),a.w-s(56),h,function()self:onClose()end,true)
     end
 end
 function O:onTap(_,g)

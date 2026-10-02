@@ -54,3 +54,10 @@ with zipfile.ZipFile(LIB/'Ink Journey.cbz','w',zipfile.ZIP_DEFLATED) as z:
     for page in range(1,13):z.writestr(f'{page:03}.png',png(page))
     z.writestr('ComicInfo.xml','<ComicInfo><Title>Ink Journey</Title><PageCount>12</PageCount></ComicInfo>')
 print('Generated five PDFs and one 12-page CBZ, all original fixtures.')
+
+# Original reflowable fixture; kept outside library so six-book UI fixtures remain stable.
+with zipfile.ZipFile(LIB.parent/'Reader-layout.epub','w') as z:
+    z.writestr('mimetype','application/epub+zip')
+    z.writestr('META-INF/container.xml','<container xmlns="urn:oasis:names:tc:opendocument:xmlns:container" version="1.0"><rootfiles><rootfile full-path="content.opf" media-type="application/oebps-package+xml"/></rootfiles></container>')
+    z.writestr('content.opf','<package xmlns="http://www.idpf.org/2007/opf" version="2.0" unique-identifier="id"><metadata xmlns:dc="http://purl.org/dc/elements/1.1/"><dc:title>Layout Test</dc:title><dc:identifier id="id">yomi-layout-test</dc:identifier><dc:language>en</dc:language></metadata><manifest><item id="text" href="text.xhtml" media-type="application/xhtml+xml"/></manifest><spine><itemref idref="text"/></spine></package>')
+    z.writestr('text.xhtml','<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Test</title></head><body>'+''.join('<p>Passage '+str(i)+'. Reading is a journey through ideas. These original words verify page selection and font layout.</p>' for i in range(150))+'</body></html>')

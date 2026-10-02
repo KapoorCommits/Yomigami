@@ -2,23 +2,41 @@
 local json = require('rapidjson')
 local lfs = require('libs/libkoreader-lfs')
 local S = {}
-function S.load(path, fallback)
-    local f = io.open(path, 'rb')
-    if not f then return fallback end
-    local data = f:read('*a'); f:close()
-    local ok, value = pcall(json.decode, data)
-    if not ok or type(value) ~= 'table' then
-        return fallback, 'Could not read '..path..'. Original file preserved.'
-    end
-    return value
+local function read(path)
+    local f=io.open(path,'rb');if not f then return nil end
+    local data=f:read('*a');f:close()
+    local ok,value=pcall(json.decode,data or '')
+    if ok and type(value)=='table' then return value,data end
 end
-function S.save(path, value)
-    local tmp = path..'.tmp'
-    local f, err = io.open(tmp, 'wb'); if not f then return nil, err end
-    local ok, msg = f:write(json.encode(value))
-    local closed, close_err = f:close()
-    if not ok or not closed then os.remove(tmp); return nil, msg or close_err end
-    return os.rename(tmp, path)
+function S.load(path,fallback)
+    local value=read(path);if value then return value end
+    local backup=read(path..'.bak');if backup then return backup,nil,'Recovered from '..path..'.bak' end
+    if lfs.attributes(path) or lfs.attributes(path..'.bak') then return fallback,'Could not read '..path..'. Original files preserved.' end
+    return fallback
+end
+function S.writeDurable(path,data)
+    local f,err=io.open(path,'wb');if not f then return nil,err end
+    local ok,msg=f:write(data)
+    if ok then ok,msg=f:flush()end
+    if ok then ok,msg=require('ffi/util').fsyncOpenedFile(f,true)end
+    local closed,close_err=f:close()
+    if not ok or not closed then return nil,msg or close_err end
+    return true
+end
+function S.save(path,value)
+    local encoded,data=pcall(json.encode,value);if not encoded then return nil,data end
+    local tmp=path..'.tmp';local ok,err=S.writeDurable(tmp,data)
+    if not ok then os.remove(tmp);return nil,err end
+    -- Preserve only a validated prior generation, never replace a good backup with corruption.
+    local previous,bytes=read(path)
+    if previous and path:match('/state%.json$') then
+        ok,err=S.writeDurable(path..'.bak.tmp',bytes)
+        if ok then ok,err=os.rename(path..'.bak.tmp',path..'.bak')end
+        if ok then ok,err=require('ffi/util').fsyncDirectory(path..'.bak')end
+        if not ok then os.remove(tmp);return nil,err end
+    end
+    ok,err=os.rename(tmp,path);if not ok then return nil,err end
+    return require('ffi/util').fsyncDirectory(path)
 end
 function S.natural(a, b)
     local function key(s)

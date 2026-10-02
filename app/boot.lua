@@ -24,6 +24,6 @@ if os.getenv('YOMIGAMI_SCREENSHOT') then
     bb:writePNG(os.getenv('YOMIGAMI_SCREENSHOT'))
     bb:free();app:clearCovers();Device:exit();os.exit(0)
 end
-if app.state_error then app:message(app.state_error) end
+if app.state_error then app:message(app.state_error) elseif app.recovery_notice then app:message(app.recovery_notice)end
 UI:run()
 Device:exit()

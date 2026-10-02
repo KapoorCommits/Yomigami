@@ -58,6 +58,7 @@ function App:chapterDropdown()
     self:chapterMenu{title=self.book.title,path=self.book.path,chapters={self.book},cover_path=self.book.path}
 end
 function App:onHold(_,g)
+    if self.screen_name=='reader' then self:pageTextNotes();return true end
     if self.screen_name~='library' then return true end
     for _,h in ipairs(self.book_hits or {}) do
         if g.pos.x>=h.x and g.pos.x<h.x+h.w and g.pos.y>=h.y and g.pos.y<h.y+h.h then self:bookActions(h.book);break end

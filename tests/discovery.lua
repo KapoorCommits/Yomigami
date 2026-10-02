@@ -26,5 +26,5 @@ local tick=app.prefetch_tick;for i=1,5 do tick()end
 local size=0;for _,v in pairs(app.page_cache)do size=size+v.image:getWidth()*v.image:getHeight()*v.image:getBpp()/8 end
 assert(size<=6*app.w*app.h*4)
 local hits=app.cache_hits or 0;app:turn(1);assert(app.cache_hits==hits+1 and app.nav.page==2)
-app.state.autocrop=true;app:renderPage();assert(app.page_cache[3]==nil,'Crop must invalidate previously prefetched pages');app.state.autocrop=false;app:closeBook();assert(not next(app.page_cache))
+app.state.autocrop=true;app:renderPage();assert(app.page_cache['3/0/0']==nil,'Crop must invalidate previously prefetched pages');app.state.autocrop=false;app:closeBook();assert(not next(app.page_cache))
 print('PASS discovery, chapter fetch, honest progress, conservative crop bounds and cached page turns; cache bytes '..size)

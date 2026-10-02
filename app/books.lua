@@ -13,7 +13,7 @@ function B:search()
 end
 function B:chooseSource(source)
     self.request_generation=(self.request_generation or 0)+1;self.source=source;self.query=nil;self.results=nil;self.error=nil;self.page=1;UI:setDirty(self,'full')
-    self.owner:input('Search '..(source=='gutenberg' and 'Gutenberg ebooks' or source=='zlib' and 'Z-Library' or 'Internet Archive PDFs'),function(q)if not self.closed then self.query=q;self.remote_page=1;self:search()end end)
+    self.owner:input('Search '..(source=='gutenberg' and 'Gutenberg ebooks' or source=='zlib' and 'Z-Library' or source=='textbooks' and 'Open Textbook Library' or 'Internet Archive PDFs'),function(q)if not self.closed then self.query=q;self.remote_page=1;self:search()end end)
 end
 function B:download(book)
     local a=self.owner;local T=require('book_transfer');a:message('Checking download size…')
@@ -39,9 +39,36 @@ function B:zlibrary()
         end)
     end
     a:menu('Z-Library',{
-        {text='Search PDF & EPUB',callback=function()self:chooseSource('zlib')end},
+        {text='Search PDF & EPUB',callback=function()local ok=pcall(require('zlibrary').session,a.root);if ok then self:chooseSource('zlib')else signin()end end},
         {text='Sign in / change server',callback=signin},
         {text='Sign out',callback=function()os.remove(a.root..'/zlibrary-session.json');a:message('Signed out.')end},
+    })
+end
+function B:annas()
+    local a=self.owner;local A=require('annas')
+    a:menu('Anna’s Archive',{
+        {text='Search on phone / computer, then import',callback=function()
+            a:input('Search Anna’s Archive',function(q)
+                require('wifi_receive').show(a,function()self:onClose()end,A.searchURL(q))
+            end)
+        end},
+        {text='Download book link (membership required)',callback=function()
+            a:input('Anna’s Archive .gl book URL or MD5',function(value)
+                local ok,id=pcall(A.md5,value);if not ok then return a:message(id)end
+                a:input('Book title',function(title)
+                    a:menu('Choose the file’s format',{
+                        {text='PDF',callback=function()self:download{source='annas',id=id,title=title,format='PDF'}end},
+                        {text='EPUB',callback=function()self:download{source='annas',id=id,title=title,format='EPUB'}end},
+                    })
+                end)
+            end)
+        end},
+        {text='Set membership secret key',callback=function()
+            a:input('Anna’s Archive membership secret key',function(key)
+                local ok,err=pcall(A.setKey,a.root,key);a:message(ok and 'Membership key saved on this device.' or err)
+            end,true)
+        end},
+        {text='Remove membership key',callback=function()os.remove(a.root..'/annas-session.json');a:message('Membership key removed.')end},
     })
 end
 function B:paintTo(bb)
@@ -51,7 +78,11 @@ function B:paintTo(bb)
     a:label(bb,'Stories, ideas and entire worlds.',p,s(82),13,false,w)
     if not self.query then
         local rows={
+            {'import','Import PDF From Anywhere','Phone or computer · Scan QR or use Wi-Fi',function()
+                require('wifi_receive').show(a,function()self:onClose()end)
+            end},
             {'gutenberg','Project Gutenberg','EPUB classics · Free downloads',function()self:chooseSource('gutenberg')end},
+            {'textbooks','Open Textbook Library','Open-access textbooks · Direct PDFs',function()self:chooseSource('textbooks')end},
             {'archive','Internet Archive','Publicly downloadable PDFs',function()self:chooseSource('archive')end},
             {'url','Download from a link','Direct HTTPS links to PDF or EPUB files',function()
                 a:input('Direct PDF or EPUB HTTPS link',function(url)
@@ -60,19 +91,20 @@ function B:paintTo(bb)
                 end)
             end},
             {'zlib','Z-Library','PDF & EPUB · Sign in with your account',function()self:zlibrary()end},
-            {'pdfdrive','PDFDrive','Access blocked · Integration unavailable',function()a:message('pdfdrive.webs.nf returned HTTP 403. You can import a downloaded file or use a direct book link.')end},
+            {'annas','Anna’s Archive','Browser search & import · Member downloads',function()self:annas()end},
         }
-        for i,row in ipairs(rows)do local y=s(140)+(i-1)*s(102)
-            bb:paintRect(p,y,w,s(86),BB.Color8(247));bb:paintBorder(p,y,w,s(86),1,BB.Color8(210))
-            a:centerLabel(bb,row[2],p,y+s(9),w,s(33),18,true);a:centerLabel(bb,row[3],p,y+s(47),w,s(25),12,false)
-            self:hit(row[1],p,y,w,s(86),row[4])
+        for i,row in ipairs(rows)do local y=s(130)+(i-1)*s(88)
+            bb:paintRect(p,y,w,s(76),BB.Color8(247));bb:paintBorder(p,y,w,s(76),1,BB.Color8(210))
+            a:centerLabel(bb,row[2],p,y+s(9),w,s(30),17,true);a:centerLabel(bb,row[3],p,y+s(42),w,s(25),12,false)
+            self:hit(row[1],p,y,w,s(76),row[4])
         end
         return
     end
     self:button(bb,'search',self.query,p,s(118),w-s(56),s(48),function()self:chooseSource(self.source)end)
     self:button(bb,'clear','×',a.w-p-s(46),s(118),s(46),s(48),function()self.query=nil;self.results=nil;self.request_generation=(self.request_generation or 0)+1;self.loading=false;UI:setDirty(self,'full')end)
-    a:label(bb,self.loading and 'Searching…' or self.error and 'Unavailable · Try again' or 'Tap a book to download',p,s(190),12,false,w)
-    local items=self.results or {}
+    a:label(bb,self.loading and 'Searching…' or self.error and 'Unavailable · Try again' or (#(self.results or {})==0 and 'No matching files on this page · Try next page' or 'Tap a book to download'),p,s(190),12,false,w)
+    if self.error then self:button(bb,'error-details','Why did this fail?',p,s(230),w,s(44),function()a:message(self.error)end)end
+    local items=self.error and {} or self.results or {}
     for slot=1,self.per do local index=(self.page-1)*self.per+slot;local book=items[index]
         if book then local y=s(230)+(slot-1)*s(76)
             bb:paintRect(p,y,w,s(66),BB.Color8(247));a:centerLabel(bb,book.title,p,y+s(5),w,s(30),16,true)

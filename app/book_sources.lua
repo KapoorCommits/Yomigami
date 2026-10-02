@@ -22,6 +22,20 @@ function B.get(url,sink,reset,headers)
 end
 function B.search(source,q,page,root)
     if source=='zlib' then return require('zlibrary').search(root,q,page)end
+    if source=='textbooks' then
+        local data=json.decode(B.get('https://open.umn.edu/opentextbooks/textbooks.json?language=eng&formats%5B%5D=PDF&q='..E(q)..'&page='..page))
+        assert(type(data.data)=='table','Textbook catalog returned an invalid response.')
+        local books={}
+        for _,book in ipairs(data.data)do
+            for _,f in ipairs(book.formats or {})do
+                -- Some PDF entries are publisher landing pages, not files.
+                if f.type=='PDF' and type(f.url)=='string' and f.url:match('^https://') and f.url:lower():match('%.pdf[%?#]?') then
+                    books[#books+1]={id=tostring(book.id),title=book.title,author='Open Textbook Library',url=f.url,format='PDF',source='textbooks'};break
+                end
+            end
+        end
+        return {books=books,more=type(data.links)=='table' and type(data.links.next)=='string'}
+    end
     if source=='gutenberg' then
         local data=json.decode(B.get('https://gutendex.com/books/?languages=en&search='..E(q)..'&page='..page))
         local books={}
@@ -39,6 +53,7 @@ function B.search(source,q,page,root)
     error('This source does not currently expose a verified search integration.')
 end
 function B.resolve(book,root)
+    if book.source=='annas' then return require('annas').resolve(root,book)end
     if book.source=='zlib' then return require('zlibrary').resolve(root,book)end
     if book.url then return book.url end
     local data=json.decode(B.get('https://archive.org/metadata/'..E(book.id)))

@@ -21,7 +21,7 @@ It began with a simple frustration: updating KOReader could disturb the Rakuyomi
 
 **Independent of your KOReader installation. Deeply indebted to KOReader and Rakuyomi.**
 
-> **Native alpha · 0.4.0.** Developed for the jailbroken Kindle Paperwhite 12th generation, with firmware 5.18.5.0.1. Core reading and page turns have been exercised on that device; the latest PDF/EPUB discovery, dark-mode and display changes still need hardware confirmation. Other models are unverified. A prebuilt installer ZIP is available for this target; nearby firmware versions are not yet verified.
+> **Development: 0.5.0 RC with October reader updates; published installer: 0.4.0 alpha.** Developed for the jailbroken Kindle Paperwhite 12th generation, with firmware 5.18.5.0.1. Core reading and page turns have been exercised on that device; the latest PDF/EPUB discovery, dark-mode and display changes still need hardware confirmation. Other models are unverified. A prebuilt installer ZIP is available for this target; nearby firmware versions are not yet verified.
 
 ## Make room for the story
 
@@ -36,9 +36,9 @@ It began with a simple frustration: updating KOReader could disturb the Rakuyomi
 
 **Pages with breathing room.** Hide the toolbar, trim large white borders, adjust the tone of a scan, or enlarge a panel. Auto-crop fills the width; tall pages pan before advancing.
 
-**Your next chapter, prepared.** Optional pre-rendering caches four upcoming pages and the previous page, within a 32 MB budget. It reduces repeat decoding; cold pages and e-ink refresh still take time.
+**Your next chapter, prepared.** Optional pre-rendering follows your last navigation direction, preparing four pages ahead and one behind, with recently viewed panned regions retained within a 32 MB budget. It reduces repeat decoding; cold pages and e-ink refresh still take time.
 
-**One search, several shelves.** Eleven English-capable source adapters are included, including Weeb Central and MangaDex. Results identify their source. Bulk manga downloads use a persistent queue, with progress, pause, retry and background reading. Website availability and account limits still apply.
+**One search, several shelves.** Twenty English-capable source adapters are included, including Weeb Central and MangaDex. Results identify their source. Bulk manga downloads use a persistent queue, with progress, pause, retry and background reading. Website availability and account limits still apply.
 
 ## A look inside
 
@@ -71,7 +71,7 @@ The **PDFs** button opens the PDF/EPUB browser:
 - **Direct links:** import a PDF or EPUB from an HTTPS download URL.
 - **Z-Library:** an independent account integration informed by ZlibraryKO’s plugin. Sign in on the Kindle with your current server address. Authenticated downloads remain unverified.
 
-PDFDrive is listed as unavailable because the tested site returned an access error. EPUB reading uses a fixed reflow layout; font customization, text selection, annotations and DRM support are not implemented. No manga chapters or commercial ebooks are distributed with this repository.
+The development build removes PDFDrive after repeated access failures and adds Open Textbook Library plus Anna’s Archive browser import/member downloads. Z-Library can still be blocked by its server. EPUB font customization and selectable-text highlights are available in development; OCR and DRM support are not implemented. No manga chapters or commercial ebooks are distributed with this repository.
 
 ## Honest about the early days
 
@@ -104,3 +104,31 @@ If Yomigami earns a place on your Kindle, a star helps other readers find it.
 Yomigami application code is **[AGPL-3.0-or-later](LICENSE)**. Upstream components retain their own licenses and notices. You can inspect, modify and share the code under the applicable license terms.
 
 Development candidate: [Try the 0.5.0 storage, reading settings and Wi-Fi transfer features](docs/TESTING_0.5.0.md). Device verification is pending.
+
+[20 bundled English manga sources and installation details](docs/SOURCES.md).
+
+## October reader development
+
+The development checkout includes Wi-Fi/QR import, storage usage, per-book settings,
+resumable PDF/EPUB downloads, updated book sources, and the following reader work:
+
+- EPUB layout uses the actual reader viewport and a saved per-book font size.
+  Position is preserved approximately when font size or viewport changes.
+- State saves flush and fsync before replacement, retain a validated `state.json.bak`,
+  and recover from it if the current state is unreadable. Storage hardware can still fail.
+- Follow manga from its chapter screen, then use **Library → + → Followed series**
+  to check sources and choose missing chapters. Checks are manual while the app is open;
+  failed sources report errors and do not erase earlier results.
+- Hold a page to open selectable text. Hold/drag within that view to save a highlight
+  or attach a note. Scans without a text layer support page notes, not OCR selection.
+  **Options → Text, notes & controls → Highlights & notes** lists and exports them
+  as Markdown under `yomigami/data/exports`. EPUB locations are approximate after reflow;
+  highlights are collected excerpts, not overlays drawn onto the original page.
+- Separate manga/text full-refresh intervals (1, 6, 12, never), per-book tap zones,
+  and an optional current-book cover during Yomigami sleep. In whole-page-forward mode,
+  double-tap the page to show the toolbar;
+  the visible toolbar remains available until explicitly hidden.
+
+These changes require Kindle validation before a public release. Continuous webtoon
+rendering, landscape/two-page spreads, and battery-aware download scheduling are not
+part of this update. The published 0.4.0 ZIP does not contain these development features.

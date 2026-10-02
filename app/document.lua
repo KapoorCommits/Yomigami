@@ -3,15 +3,33 @@
 local mupdf = require('ffi/mupdf')
 local DC = require('ffi/drawcontext')
 local D = {}; D.__index=D
-function D.open(path, password)
+function D.open(path, password, layout)
     local raw = mupdf.openDocument(path)
     if raw:needsPassword() and not raw:authenticatePassword(password or '') then
         raw:close(); error('This PDF needs a password.')
     end
-    if raw:isDocumentReflowable() then raw:layoutDocument(600,800,24) end
+    local reflow=raw:isDocumentReflowable()
+    if reflow then
+        layout=layout or {width=600,height=800,font_size=24}
+        raw:layoutDocument(layout.width,layout.height,layout.font_size)
+    end
     local count = raw:getPages()
     if count < 1 then raw:close(); error('This document has no readable pages.') end
-    return setmetatable({raw=raw, count=count, path=path}, D)
+    return setmetatable({raw=raw, count=count, path=path,reflowable=reflow,layout=layout}, D)
+end
+function D:relayout(width,height,font_size)
+    if not self.reflowable then return end
+    self.raw:layoutDocument(width,height,font_size);self.count=self.raw:getPages()
+    self.layout={width=width,height=height,font_size=font_size};self.crop_bounds=nil
+end
+function D:pageText(number)
+    local page=self.raw:openPage(number)
+    local ok,lines=pcall(page.getPageText,page);page:close();if not ok then error(lines)end
+    local text={};for _,line in ipairs(lines or {})do
+        local words={};for _,word in ipairs(line)do words[#words+1]=word.word end
+        text[#text+1]=table.concat(words,' ')
+    end
+    return table.concat(text,'\n')
 end
 function D:render(number, width, height, mode, offset, magnification, horizontal, contrast, autocrop)
     assert(number >= 1 and number <= self.count, 'Page outside document')

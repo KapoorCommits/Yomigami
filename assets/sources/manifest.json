@@ -7,7 +7,8 @@
       "en"
     ],
     "source_of_source": "aidoku-community.github.io",
-    "sha256": "96f85d6402ccdedb21e2981ccf4200d14b8281c75aef793963dacffeb9bd201f"
+    "sha256": "95b0b25ae23ebdeffc3f745802cf39a5bc6fc204acc890b67fd0f7d5e110070e",
+    "download_url": "https://aidoku-community.github.io/sources/sources/en.weebcentral-v8.aix"
   },
   {
     "id": "multi.mangadex",
@@ -70,7 +71,8 @@
       "vi"
     ],
     "source_of_source": "aidoku-community.github.io",
-    "sha256": "6421004fca40e0b0bb9a85b097ee8d887f086e3240db854a776363164f1a7570"
+    "sha256": "4ee83634fce1af4832551f6685c0a450696e52f5d23fda2bd942d263a863df06",
+    "download_url": "https://aidoku-community.github.io/sources/sources/multi.mangadex-v14.aix"
   },
   {
     "id": "en.asurascans",
@@ -80,7 +82,8 @@
       "en"
     ],
     "source_of_source": "aidoku-community.github.io",
-    "sha256": "098c31b5617a2694bc29322827b6f7dfe92de15cfd8db3bdbec77ec64ba39df2"
+    "sha256": "64b1d32e62a47a608c81792e0b677de775f1394aa853d9b2f9961863bb67978b",
+    "download_url": "https://aidoku-community.github.io/sources/sources/en.asurascans-v19.aix"
   },
   {
     "id": "en.flamecomics",
@@ -90,7 +93,8 @@
       "en"
     ],
     "source_of_source": "aidoku-community.github.io",
-    "sha256": "f296f2e27a15d8398a3f7dfb3054e4e5e61dd5775046d54c8ecd243290b8c2e6"
+    "sha256": "79b0031070b638ba77d6a9db3269c772e20ef55758dc2572145d548cfd7a0fa6",
+    "download_url": "https://aidoku-community.github.io/sources/sources/en.flamecomics-v4.aix"
   },
   {
     "id": "en.guya",
@@ -100,7 +104,8 @@
       "en"
     ],
     "source_of_source": "aidoku-community.github.io",
-    "sha256": "f83d070937f307ce40d02aa3b45685a498a8189621a1c22d717cba754aad4c7c"
+    "sha256": "05f09f3a12af4f0afc85bdbce472a491ea6f41fcf1af087a923a384a9cddafaf",
+    "download_url": "https://aidoku-community.github.io/sources/sources/en.guya-v2.aix"
   },
   {
     "id": "en.tcbscans",
@@ -110,7 +115,8 @@
       "en"
     ],
     "source_of_source": "aidoku-community.github.io",
-    "sha256": "43cf139debccafe735495c46ed2523f15b9f79903ff1ccded04b6286dfc4ce0a"
+    "sha256": "4b8552f296873216132585fe607ff8b30c47fc9c1735c19ce28c9af0843ab552",
+    "download_url": "https://aidoku-community.github.io/sources/sources/en.tcbscans-v6.aix"
   },
   {
     "id": "en.magusmanga",
@@ -120,7 +126,8 @@
       "en"
     ],
     "source_of_source": "aidoku-community.github.io",
-    "sha256": "a01669bbdade0e05a87dc64ac13f62010f5f51dc51346cc127f0e0be1f5c291c"
+    "sha256": "656e7c3d6c953a769444e6f10ccaffd84b9712f919a7f6c4a0832fc671afeda9",
+    "download_url": "https://aidoku-community.github.io/sources/sources/en.magusmanga-v2.aix"
   },
   {
     "id": "en.hivescans",
@@ -130,7 +137,8 @@
       "en"
     ],
     "source_of_source": "aidoku-community.github.io",
-    "sha256": "18289e4dd30f7daf16ac2b1447146af820825277fcf66708355e0766b62278b1"
+    "sha256": "50f4445d32263a464909321c929d38f33ae8e3a9500a815557b7538655760ba7",
+    "download_url": "https://aidoku-community.github.io/sources/sources/en.hivescans-v2.aix"
   },
   {
     "id": "en.vortexscans",
@@ -140,7 +148,8 @@
       "en"
     ],
     "source_of_source": "aidoku-community.github.io",
-    "sha256": "789541855139b986e0022bd8f2998ddbe7a86cd65979b401648f0dbe77bcafbb"
+    "sha256": "be8091765c11719c4633e99762d8ce43262e264111c80005ea0e8767b190ffc6",
+    "download_url": "https://aidoku-community.github.io/sources/sources/en.vortexscans-v3.aix"
   },
   {
     "id": "en.dankefurslesen",
@@ -150,7 +159,8 @@
       "en"
     ],
     "source_of_source": "aidoku-community.github.io",
-    "sha256": "4489bb6671cb947f17256f9a0f738d5f34b3f1b6cf2d01674765129dc5eaef62"
+    "sha256": "68a9b633041bb24b749727ee69d92989222430d9713f520c2151b6b986e2b549",
+    "download_url": "https://aidoku-community.github.io/sources/sources/en.dankefurslesen-v3.aix"
   },
   {
     "id": "en.mangareadorg",
@@ -160,6 +170,120 @@
       "en"
     ],
     "source_of_source": "aidoku-community.github.io",
-    "sha256": "66599236aba18915f9a98d785ec2347ab92d045e68d7fbad9d3dbe1dda2f3cfb"
+    "sha256": "1687801b62f20fc0f7a2b4db584b679999262781274fb1b3651ad3d532ec50ff",
+    "download_url": "https://aidoku-community.github.io/sources/sources/en.mangareadorg-v2.aix"
+  },
+  {
+    "id": "en.chikari",
+    "name": "Chikari",
+    "version": 1,
+    "languages": [
+      "en"
+    ],
+    "source_of_source": "aidoku-community.github.io",
+    "sha256": "a995625ba65671531a18ea9e7ef5f51d5840e7616db7323e2512bd1b2399baeb",
+    "download_url": "https://aidoku-community.github.io/sources/sources/en.chikari-v1.aix"
+  },
+  {
+    "id": "en.ezmanga",
+    "name": "EzManga",
+    "version": 2,
+    "languages": [
+      "en"
+    ],
+    "source_of_source": "aidoku-community.github.io",
+    "sha256": "a068e762267b6603d64f8a7a09d718449c717f263073cc91b957229517e75184",
+    "download_url": "https://aidoku-community.github.io/sources/sources/en.ezmanga-v2.aix"
+  },
+  {
+    "id": "en.mangabat",
+    "name": "MangaBat",
+    "version": 9,
+    "languages": [
+      "en"
+    ],
+    "source_of_source": "aidoku-community.github.io",
+    "sha256": "0844fa616b0d0327056bcc8a61fe0602bfc994f79fc57c4f3164ecd04505e82a",
+    "download_url": "https://aidoku-community.github.io/sources/sources/en.mangabat-v9.aix"
+  },
+  {
+    "id": "en.mangademon",
+    "name": "MangaDemon",
+    "version": 7,
+    "languages": [
+      "en"
+    ],
+    "source_of_source": "aidoku-community.github.io",
+    "sha256": "40f7b207669d3616c19c821ffa386ac986f80d5147c7f77a10327c3d7c378a88",
+    "download_url": "https://aidoku-community.github.io/sources/sources/en.mangademon-v7.aix"
+  },
+  {
+    "id": "en.manganato",
+    "name": "MangaNato",
+    "version": 8,
+    "languages": [
+      "en"
+    ],
+    "source_of_source": "aidoku-community.github.io",
+    "sha256": "edf3d728b8b0491b26fa3b3b2e604b8fe1ac956de508952744eec0bb584109d6",
+    "download_url": "https://aidoku-community.github.io/sources/sources/en.manganato-v8.aix"
+  },
+  {
+    "id": "en.manhuaplusorg",
+    "name": "Manhuaplus.org",
+    "version": 1,
+    "languages": [
+      "en"
+    ],
+    "source_of_source": "aidoku-community.github.io",
+    "sha256": "19ea5aeda11a89a6d6c31cdd91c9062c16e5917e840ab46404bc66c0ba54920b",
+    "download_url": "https://aidoku-community.github.io/sources/sources/en.manhuaplusorg-v1.aix"
+  },
+  {
+    "id": "en.nyxscans",
+    "name": "Nyx Scans",
+    "version": 1,
+    "languages": [
+      "en"
+    ],
+    "source_of_source": "aidoku-community.github.io",
+    "sha256": "406e422d24d177d2dd18f7734e354115384cc027db6448be964c343ba3e5c860",
+    "download_url": "https://aidoku-community.github.io/sources/sources/en.nyxscans-v1.aix"
+  },
+  {
+    "id": "multi.mangafire",
+    "name": "MangaFire",
+    "version": 8,
+    "languages": [
+      "en",
+      "es",
+      "es-419",
+      "fr",
+      "ja",
+      "pt",
+      "pt-BR"
+    ],
+    "source_of_source": "aidoku-community.github.io",
+    "sha256": "361d6b815500d5d89dd42656f309bd022e4df85fe5bc89539c72fcb416723f5e",
+    "download_url": "https://aidoku-community.github.io/sources/sources/multi.mangafire-v8.aix"
+  },
+  {
+    "id": "multi.mangaplus",
+    "name": "MANGA Plus",
+    "version": 6,
+    "languages": [
+      "en",
+      "es",
+      "fr",
+      "id",
+      "pt-BR",
+      "ru",
+      "th",
+      "vi",
+      "de"
+    ],
+    "source_of_source": "aidoku-community.github.io",
+    "sha256": "47502d2c7a4f04f7543c4fc01e8d76a8ace58cf9288a12c2c91da072f0565d1c",
+    "download_url": "https://aidoku-community.github.io/sources/sources/multi.mangaplus-v6.aix"
   }
 ]

@@ -9,7 +9,20 @@ end
 function S:show()
     local Device=require('device');Device.screen_saver_mode=true
     local Info=require('ui/widget/infomessage');local UI=require('ui/uimanager')
-    self.widget=Info:new{text=self.message,dismissable=false}
+    local app=self.app;local cover
+    if app and app.book and app.state.sleep_cover~=false then
+        local ok,image=pcall(app.cover,app,app.book,app.w,app.h)
+        if ok and image then cover=image:copy()end
+    end
+    if cover then
+        local Widget=require('ui/widget/widget');local BB=require('ffi/blitbuffer')
+        self.widget=Widget:new{dimen=app.dimen,image=cover}
+        function self.widget:paintTo(bb)
+            bb:fill(BB.COLOR_WHITE)
+            bb:blitFrom(self.image,math.floor((app.w-self.image:getWidth())/2),math.floor((app.h-self.image:getHeight())/2),0,0,self.image:getWidth(),self.image:getHeight())
+        end
+        function self.widget:onCloseWidget()if self.image then self.image:free();self.image=nil end end
+    else self.widget=Info:new{text=self.message,dismissable=false}end
     UI:show(self.widget);UI:setDirty('all','full')
 end
 function S:close()

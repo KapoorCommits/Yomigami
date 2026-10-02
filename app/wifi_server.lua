@@ -10,13 +10,18 @@ function S.address()
     if not ip or not ip:match('^%d+%.%d+%.%d+%.%d+$') or ip=='0.0.0.0' or ip:match('^127%.')then return nil end
     return ip
 end
-function S.page(token)
-    return [[<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Send to Yomigami</title>
+function S.page(token,browse_url)
+    local page=[[<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Send to Yomigami</title>
 <style>body{margin:0;background:#f4f1e8;color:#233c30;font:17px system-ui,sans-serif}main{max-width:620px;margin:8vh auto;padding:28px}small{letter-spacing:.15em}h1{font:48px Georgia,serif;line-height:1.12}p{line-height:1.6}label{display:block;padding:30px;border:1px dashed #697d6b;border-radius:18px;background:#fffdf6}input{max-width:100%;margin-top:16px}button{width:100%;padding:18px;border:0;border-radius:12px;background:#233c30;color:white;font:inherit;margin-top:22px;cursor:pointer}button:disabled{opacity:.5}progress{width:100%;accent-color:#233c30;height:14px;margin-top:28px}#status{white-space:pre-line}footer{font-size:13px;color:#546457;margin-top:36px}</style>
 <main><small>A READER OF YOUR OWN</small><h1>Your next book.<br>Now on your Kindle.</h1><p>Choose PDF, EPUB or CBZ files. They travel directly over your local Wi-Fi and appear in your Yomigami library.</p><label>Choose your books<input id="files" type="file" multiple accept=".pdf,.epub,.cbz"></label><button id="send">Send to Yomigami</button><progress id="progress" max="100" value="0"></progress><p id="status" role="status" aria-live="polite">Keep the transfer screen open on your Kindle.</p><footer>Local transfer · No cloud account · Up to 512 MB per file<br>Use a trusted Wi-Fi network. This local connection is HTTP.</footer></main>
 <script>const files=document.querySelector('#files'),send=document.querySelector('#send'),bar=document.querySelector('#progress'),status=document.querySelector('#status');
 send.onclick=async()=>{if(!files.files.length){status.textContent='Choose a book first.';return}send.disabled=true;files.disabled=true;let done=0;try{for(const file of files.files){if(file.size>512*1024*1024)throw Error(file.name+' exceeds 512 MB.');status.textContent='Sending '+file.name;await new Promise((resolve,reject)=>{const x=new XMLHttpRequest();x.open('POST',location.pathname.replace(/\/$/,'')+'/upload');x.setRequestHeader('Content-Type','application/octet-stream');x.setRequestHeader('X-Filename',encodeURIComponent(file.name));x.upload.onprogress=e=>{if(e.lengthComputable)bar.value=e.loaded/e.total*100};x.onload=()=>{let r;try{r=JSON.parse(x.responseText)}catch{reject(Error('The Kindle returned an unexpected response.'));return}x.status===201?resolve():reject(Error(r.error||'Upload failed.'))};x.onerror=()=>reject(Error('Connection lost. Keep both devices on the same Wi-Fi and try again.'));x.send(file)});done++;}status.textContent=done+' book'+(done===1?'':'s')+' added to your Kindle.';bar.value=100}catch(e){status.textContent=e.message+'\n'+done+' added successfully.'}finally{send.disabled=false;files.disabled=false}};
 </script></html>]]
+    if browse_url then
+        assert(browse_url:match('^https://annas%-archive%.gl/search%?q=[%w%-%_%.%~%%]*$'),'Invalid browse link')
+        page=page:gsub('<label>Choose your books',function()return '<p><a href="'..browse_url..'" target="_blank" rel="noopener noreferrer">Search Anna’s Archive ↗</a></p><p>Download your PDF or EPUB there, then return to this tab and choose the downloaded file below.</p><label>Choose your books'end,1)
+    end
+    return page
 end
 local function respond(c,code,body,content_type)
     local labels={[200]='OK',[201]='Created',[400]='Bad Request',[403]='Forbidden',[404]='Not Found',[409]='Conflict',[413]='Too Large',[507]='Insufficient Storage',[422]='Unprocessable Content'}
@@ -28,14 +33,14 @@ local function line(c)
     for i=1,4096 do local ch=assert(c:receive(1));if ch=='\n' then return table.concat(chars):gsub('\r$','')end;chars[#chars+1]=ch end
     error('Header line too long')
 end
-function S.handle(c,root,token,host)
+function S.handle(c,root,token,host,browse_url)
     c:settimeout(15);local part=root..'/.wifi-upload.part';local file
     local ok,err=pcall(function()
         local first=line(c)
         local method,path=first:match('^(%u+) (%S+) HTTP/1%.[01]$');local h={};local count=0
         while true do local l=line(c);count=count+#l;assert(count<16384,'Headers too large');if l=='' then break end;local k,v=l:match('^([^:]+):%s*(.-)%s*$');assert(k and not h[k:lower()],'Invalid headers');h[k:lower()]=v end
         if h.host~=host or (h.origin and h.origin~='http://'..host) or (path~='/'..token and path~='/'..token..'/upload')then respond(c,403,'{"error":"This transfer session is not available."}');return end
-        if method=='GET' and path=='/'..token then respond(c,200,S.page(token),'text/html; charset=utf-8');return end
+        if method=='GET' and path=='/'..token then respond(c,200,S.page(token,browse_url),'text/html; charset=utf-8');return end
         if method~='POST' or path~='/'..token..'/upload' then respond(c,404,'{"error":"Not found."}');return end
         local n=tonumber(h['content-length']);if h['transfer-encoding'] or not n or n<1 or n%1~=0 or n>T.limit then respond(c,413,'{"error":"Choose a file between 1 byte and 512 MB."}');return end
         local name=(h['x-filename'] or ''):gsub('%%(%x%x)',function(hex)return string.char(tonumber(hex,16))end)
@@ -62,8 +67,8 @@ function S.handle(c,root,token,host)
     if not ok then pcall(respond,c,400,'{"error":"Transfer interrupted or invalid request. Your library was not replaced. Try again."}')end
     c:close()
 end
-function S.run(server,root,token,host)
+function S.run(server,root,token,host,browse_url)
     server:settimeout(1)
-    while true do local c=server:accept();if c then S.handle(c,root,token,host)end end
+    while true do local c=server:accept();if c then S.handle(c,root,token,host,browse_url)end end
 end
 return S

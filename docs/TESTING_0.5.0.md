@@ -17,7 +17,7 @@ The public 0.4.0 release remains available while the new features receive hardwa
    Quitting saves the queue for the next launch. Servers without safe range support
    restart from the beginning; unknown source sizes cannot be predicted.
 5. Connect the Kindle and phone/computer to the same trusted Wi-Fi. Open
-   **+ → Send to Yomigami**, scan the QR or type the displayed URL in a browser, and
+   **PDFs → Import PDF From Anywhere** (also available under **+ → Send to Yomigami**), scan the QR or type the displayed URL in a browser, and
    select PDF, EPUB or CBZ files. Keep the Kindle transfer screen open until finished.
    Select **Done · Return to library** to see the uploaded books.
 
@@ -30,3 +30,18 @@ existing filename. Interrupted phone uploads must be sent again.
 Desktop checks passed for transfer recovery, per-book settings, storage, QR display
 and real HTTP uploads. Phone-to-Kindle reachability and these new device flows still
 need hardware confirmation.
+
+## October reader candidate
+
+Build with `python3 scripts/make_reader_update.py`. The result is
+`dist/Yomigami-October-Reader-Update.zip`, for an existing Yomigami installation.
+Extract its two folders into Kindle storage, unplug USB, and open **Update Yomigami
+Reader** in the native library. KUAL is not required. Close Yomigami first.
+
+Check an EPUB at two font sizes and after reopening, a tall manga page forward and
+back, and Options → Text, notes & controls. Hold a text page, select an excerpt in
+its text view, save a highlight and note, then export Markdown. Follow a manga from
+its chapter screen and check Library → + → Followed series. Finally verify cover
+sleep/wake, tap zones, double-tap toolbar access and both refresh categories.
+
+No public release or successful device validation is implied by the local ZIP.

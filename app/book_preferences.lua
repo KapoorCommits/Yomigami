@@ -1,5 +1,5 @@
 -- SPDX-License-Identifier: AGPL-3.0-or-later
-local keys={fit='page',direction='rtl',contrast=1,autocrop=false}
+local keys={fit='page',direction='rtl',contrast=1,autocrop=false,font_size=24,tap_zones='sides'}
 return function(App)
 function App:initBookPreferences()
     self.state.book_settings=self.state.book_settings or {}
