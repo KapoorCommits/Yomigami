@@ -4,10 +4,14 @@ import hashlib, tarfile, base64, zipfile
 r=Path(__file__).resolve().parents[1]
 name='yomigami-reader-october-20261002';out=r/'dist'/name;out.mkdir(parents=True,exist_ok=True)
 files=sorted((r/'app').glob('*.lua'))
+icon=(r/'assets/icon.png').read_bytes()
+canonical=(r/'launcher/Yomigami.sh').read_text().replace('# Icon: /mnt/us/yomigami/icon.png','# Icon: data:image/png;base64,'+base64.b64encode(icon).decode())
+(out/'Yomigami.sh').write_text(canonical)
+entries=[(file,'app/'+file.name) for file in files]+[(r/'assets/icon.png','icon.png'),(out/'Yomigami.sh','Yomigami.sh')]
 with tarfile.open(out/'payload.tar.gz','w:gz') as archive:
-    for file in files:archive.add(file,arcname='app/'+file.name)
+    for file,name_in_tar in entries:archive.add(file,arcname=name_in_tar)
 digest=hashlib.sha256((out/'payload.tar.gz').read_bytes()).hexdigest()
-checks='\n'.join(hashlib.sha256(file.read_bytes()).hexdigest()+'  app/'+file.name for file in files)
+checks='\n'.join(hashlib.sha256(file.read_bytes()).hexdigest()+'  '+name_in_tar for file,name_in_tar in entries)
 script=r'''#!/bin/sh
 set -eu
 ROOT=/mnt/us/yomigami
@@ -23,6 +27,14 @@ STAGE="$ROOT/.reader-stage.$$"
 BACKUP="$ROOT/.backup-reader-$(date +%Y%m%d-%H%M%S)-$$"
 mkdir "$STAGE"
 SWAPPED=0
+ART_READY=0
+DOC=/mnt/us/documents
+restore_art() {
+ for pair in "icon.png:$ROOT/icon.png" "Yomigami.sh:$DOC/Yomigami.sh" "cache.png:$DOC/Yomigami.sh.sdr/icon.png"; do
+  key=${pair%%:*}; dest=${pair#*:}
+  if [ -f "$BACKUP/$key" ]; then cp -p "$BACKUP/$key" "$dest"; else rm -f "$dest"; fi
+ done
+}
 rollback() {
  code=$?
  if [ "$code" -ne 0 ]; then
@@ -30,6 +42,8 @@ rollback() {
    [ ! -d "$ROOT/app" ] || mv "$ROOT/app" "$STAGE/failed-app"
    mv "$BACKUP/app" "$ROOT/app"
   fi
+  if [ "$ART_READY" = 1 ]; then restore_art; fi
+  sync
   eips 1 3 "Update failed. Previous reader preserved."
  fi
 }
@@ -45,9 +59,23 @@ for file in "$STAGE/app/"*.lua; do
  YOMIGAMI_CHECK_FILE="$file" ./luajit -e 'assert(loadfile(os.getenv("YOMIGAMI_CHECK_FILE")))'
 done
 mkdir "$BACKUP"
+mkdir -p "$DOC/Yomigami.sh.sdr"
+for pair in "icon.png:$ROOT/icon.png" "Yomigami.sh:$DOC/Yomigami.sh" "cache.png:$DOC/Yomigami.sh.sdr/icon.png"; do
+ key=${pair%%:*}; dest=${pair#*:}
+ [ ! -f "$dest" ] || cp -p "$dest" "$BACKUP/$key"
+done
+sync
+ART_READY=1
 mv "$ROOT/app" "$BACKUP/app"
 SWAPPED=1
 mv "$STAGE/app" "$ROOT/app"
+cp "$STAGE/icon.png" "$ROOT/icon.png.new"
+mv "$ROOT/icon.png.new" "$ROOT/icon.png"
+cp "$STAGE/Yomigami.sh" "$DOC/Yomigami.sh.new"
+chmod 755 "$DOC/Yomigami.sh.new"
+mv "$DOC/Yomigami.sh.new" "$DOC/Yomigami.sh"
+cp "$STAGE/icon.png" "$DOC/Yomigami.sh.sdr/icon.png.new"
+mv "$DOC/Yomigami.sh.sdr/icon.png.new" "$DOC/Yomigami.sh.sdr/icon.png"
 sync
 printf '%s\n' "Reader update installed. Backup: $BACKUP"
 trap - EXIT HUP INT TERM
@@ -60,5 +88,5 @@ launcher='# !/bin/sh'.replace('# !','#!')+'\n# Name: Update Yomigami Reader\n# A
 with zipfile.ZipFile(r/'dist/Yomigami-October-Reader-Update.zip','w',zipfile.ZIP_DEFLATED) as z:
     z.write(out/'payload.tar.gz',name+'/payload.tar.gz');z.write(out/'install.sh',name+'/install.sh')
     z.writestr('documents/Update Yomigami Reader.sh',launcher)
-    z.writestr('START_HERE.txt','Existing Yomigami installation required. Copy both extracted folders to Kindle storage, close Yomigami, unplug USB, and open Update Yomigami Reader in the Kindle library. KUAL is not required. App files are backed up before replacement. User books/state and native Home are untouched. This is a development build, not hardware-verified. Sources are distributed separately.\n')
+    z.writestr('START_HERE.txt','Existing Yomigami installation required. Copy both extracted folders to Kindle storage, close Yomigami, unplug USB, and open Update Yomigami Reader in the Kindle library. KUAL is not required. App files, launcher and cover are backed up before replacement. User books/state and native Home are untouched. This is a development build, not hardware-verified. Sources are distributed separately.\n')
 print(out);print('Payload SHA256:',digest)
