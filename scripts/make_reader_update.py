@@ -1,10 +1,12 @@
 """Build the October reader update. Does not patch Kindle firmware or user state."""
 from pathlib import Path
-import hashlib, tarfile, base64, zipfile
+import hashlib, tarfile, base64, zipfile, subprocess
 r=Path(__file__).resolve().parents[1]
 name='yomigami-reader-october-20261002';out=r/'dist'/name;out.mkdir(parents=True,exist_ok=True)
 files=sorted((r/'app').glob('*.lua'))
-icon=(r/'assets/icon.png').read_bytes()
+subprocess.run(['sips','-Z','180',str(r/'assets/icon.png'),'--out',str(out/'launcher-icon.png')],check=True,stdout=subprocess.DEVNULL)
+icon=(out/'launcher-icon.png').read_bytes()
+assert len(icon)<60000, 'Launcher artwork must fit Kindle scanner cache'
 canonical=(r/'launcher/Yomigami.sh').read_text().replace('# Icon: /mnt/us/yomigami/icon.png','# Icon: data:image/png;base64,'+base64.b64encode(icon).decode())
 (out/'Yomigami.sh').write_text(canonical)
 entries=[(file,'app/'+file.name) for file in files]+[(r/'assets/icon.png','icon.png'),(out/'Yomigami.sh','Yomigami.sh')]
@@ -79,11 +81,17 @@ mv "$DOC/Yomigami.sh.sdr/icon.png.new" "$DOC/Yomigami.sh.sdr/icon.png"
 sync
 printf '%s\n' "Reader update installed. Backup: $BACKUP"
 trap - EXIT HUP INT TERM
+# Reopen Library and wake the existing navigation helper after USB indexing.
+# No firmware bundle or Home preferences are replaced here.
+if [ -f "$ROOT/home/enabled" ]; then
+ start yomigami-library-watch 2>/dev/null || true
+fi
+lipc-set-prop com.lab126.appmgrd start 'app://com.lab126.KPPMainApp?view=KPP_LIBRARY' 2>/dev/null || true
 eips 1 3 "Reader update installed. Opening Yomigami..."
 exec "$ROOT/launch.sh" --kual --asap
 '''.replace('__NAME__',name).replace('__DIGEST__',digest).replace('__CHECKS__',checks)
 (out/'install.sh').write_text(script)
-launcher='# !/bin/sh'.replace('# !','#!')+'\n# Name: Update Yomigami Reader\n# Author: Yomigami contributors\n# Icon: data:image/png;base64,'+base64.b64encode((r/'assets/icon.png').read_bytes()).decode()+'\n# DontUseFBInk\nexec sh /mnt/us/'+name+'/install.sh\n'
+launcher='# !/bin/sh'.replace('# !','#!')+'\n# Name: Update Yomigami Reader\n# Author: Yomigami contributors\n# Icon: data:image/png;base64,'+base64.b64encode(icon).decode()+'\n# DontUseFBInk\nexec sh /mnt/us/'+name+'/install.sh\n'
 (out/'Update Yomigami Reader.sh').write_text(launcher)
 with zipfile.ZipFile(r/'dist/Yomigami-October-Reader-Update.zip','w',zipfile.ZIP_DEFLATED) as z:
     z.write(out/'payload.tar.gz',name+'/payload.tar.gz');z.write(out/'install.sh',name+'/install.sh')
