@@ -132,3 +132,9 @@ resumable PDF/EPUB downloads, updated book sources, and the following reader wor
 These changes require Kindle validation before a public release. Continuous webtoon
 rendering, landscape/two-page spreads, and battery-aware download scheduling are not
 part of this update. The published 0.4.0 ZIP does not contain these development features.
+
+### Optional app passcode
+
+Options → Passcode lets you enable, change, or disable a 4–8 digit code. Yomigami asks for it each time the app opens, before loading the library. Changing or disabling it requires the current code. Codes are stored as salted PBKDF2-SHA256 verifiers; five incorrect attempts trigger a 30-second delay. This is an interface lock, not file encryption, and does not lock an already-open app after sleep. Someone with USB/root access can still access books or reset the lock.
+
+If you forget the code, quit Yomigami and remove only `yomigami/data/passcode.json` from Kindle storage using USB (the file lives in `YOMIGAMI_HOME`). This resets the interface lock without deleting books or progress.

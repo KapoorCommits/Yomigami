@@ -2,7 +2,7 @@
 from pathlib import Path
 import hashlib, tarfile, base64, zipfile, subprocess
 r=Path(__file__).resolve().parents[1]
-name='yomigami-reader-october-20261002';out=r/'dist'/name;out.mkdir(parents=True,exist_ok=True)
+name='yomigami-passcode-20261004';out=r/'dist'/name;out.mkdir(parents=True,exist_ok=True)
 files=sorted((r/'app').glob('*.lua'))
 subprocess.run(['sips','-Z','180',str(r/'assets/icon.png'),'--out',str(out/'launcher-icon.png')],check=True,stdout=subprocess.DEVNULL)
 icon=(out/'launcher-icon.png').read_bytes()
@@ -81,20 +81,14 @@ mv "$DOC/Yomigami.sh.sdr/icon.png.new" "$DOC/Yomigami.sh.sdr/icon.png"
 sync
 printf '%s\n' "Reader update installed. Backup: $BACKUP"
 trap - EXIT HUP INT TERM
-# Reopen Library and wake the existing navigation helper after USB indexing.
-# No firmware bundle or Home preferences are replaced here.
-if [ -f "$ROOT/home/enabled" ]; then
- start yomigami-library-watch 2>/dev/null || true
-fi
-lipc-set-prop com.lab126.appmgrd start 'app://com.lab126.KPPMainApp?view=KPP_LIBRARY' 2>/dev/null || true
 eips 1 3 "Reader update installed. Opening Yomigami..."
 exec "$ROOT/launch.sh" --kual --asap
 '''.replace('__NAME__',name).replace('__DIGEST__',digest).replace('__CHECKS__',checks)
 (out/'install.sh').write_text(script)
-launcher='# !/bin/sh'.replace('# !','#!')+'\n# Name: Update Yomigami Reader\n# Author: Yomigami contributors\n# Icon: data:image/png;base64,'+base64.b64encode(icon).decode()+'\n# DontUseFBInk\nexec sh /mnt/us/'+name+'/install.sh\n'
-(out/'Update Yomigami Reader.sh').write_text(launcher)
-with zipfile.ZipFile(r/'dist/Yomigami-October-Reader-Update.zip','w',zipfile.ZIP_DEFLATED) as z:
+launcher='# !/bin/sh'.replace('# !','#!')+'\n# Name: Update Yomigami Passcode\n# Author: Yomigami contributors\n# Icon: data:image/png;base64,'+base64.b64encode(icon).decode()+'\n# DontUseFBInk\nexec sh /mnt/us/'+name+'/install.sh\n'
+(out/'Update Yomigami Passcode.sh').write_text(launcher)
+with zipfile.ZipFile(r/'dist/Yomigami-Passcode-Update.zip','w',zipfile.ZIP_DEFLATED) as z:
     z.write(out/'payload.tar.gz',name+'/payload.tar.gz');z.write(out/'install.sh',name+'/install.sh')
-    z.writestr('documents/Update Yomigami Reader.sh',launcher)
-    z.writestr('START_HERE.txt','Existing Yomigami installation required. Copy both extracted folders to Kindle storage, close Yomigami, unplug USB, and open Update Yomigami Reader in the Kindle library. KUAL is not required. App files, launcher and cover are backed up before replacement. User books/state and native Home are untouched. This is a development build, not hardware-verified. Sources are distributed separately.\n')
+    z.writestr('documents/Update Yomigami Passcode.sh',launcher)
+    z.writestr('START_HERE.txt','Existing Yomigami installation required. Copy both extracted folders to Kindle storage, close Yomigami, unplug USB, and open Update Yomigami Passcode in the Kindle library. KUAL is not required. App files, launcher and cover are backed up before replacement. User books/state and native Home are untouched. This is a development build, not hardware-verified. Sources are distributed separately.\n')
 print(out);print('Payload SHA256:',digest)
