@@ -4,9 +4,9 @@ import hashlib, tarfile, base64, zipfile, subprocess
 r=Path(__file__).resolve().parents[1]
 name='yomigami-passcode-20261004';out=r/'dist'/name;out.mkdir(parents=True,exist_ok=True)
 files=sorted((r/'app').glob('*.lua'))
-subprocess.run(['sips','-Z','180',str(r/'assets/icon.png'),'--out',str(out/'launcher-icon.png')],check=True,stdout=subprocess.DEVNULL)
-icon=(out/'launcher-icon.png').read_bytes()
-assert len(icon)<60000, 'Launcher artwork must fit Kindle scanner cache'
+icon=(r/'assets/icon.png').read_bytes()
+assert len(icon)<74000, 'Preserve resolution with indexed PNG; embedded cover must fit scanner limits'
+(out/'launcher-icon.png').write_bytes(icon)
 canonical=(r/'launcher/Yomigami.sh').read_text().replace('# Icon: /mnt/us/yomigami/icon.png','# Icon: data:image/png;base64,'+base64.b64encode(icon).decode())
 (out/'Yomigami.sh').write_text(canonical)
 entries=[(file,'app/'+file.name) for file in files]+[(r/'assets/icon.png','icon.png'),(out/'Yomigami.sh','Yomigami.sh')]

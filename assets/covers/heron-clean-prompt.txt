@@ -1,0 +1,1 @@
+Built-in image_gen edit. Preserve YOMIGAMI, heron, mountains, book-page landscape, arch and border. Remove both subtitle and bottom caption. Crisp black ink on white; no replacement text or paper grain. Full-resolution master: yomigami-heron-clean.png. Kindle embedded cover: assets/icon.png, 586x880, 16-level indexed grayscale PNG to fit scanner limits.
