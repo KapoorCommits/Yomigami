@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased — October 2026 reader updates
+## 0.5.0 RC2 — October 2026 reader update (prerelease)
 
 - Light-grey on-page highlights in text-based PDFs and EPUBs; persistent notes and Markdown export. Passage context relocates EPUB highlights after reflow and rejects ambiguous matches.
 - Optional 4–8 digit app-start passcode with protected change/disable controls and persisted retry delays.
@@ -14,7 +14,7 @@
 - Caption-free heron launcher cover, encoded at 586 × 880 within the Kindle scanner's image limit.
 - Reader updater with checksum and syntax validation, file backups and replacement-failure rollback.
 
-These source changes are newer than the published 0.4.0 binary. See [verification](docs/VERIFICATION.md) and [candidate update instructions](docs/OCTOBER_UPDATE.md).
+The update ZIP requires an existing installation. The 0.4.0 ZIP remains the first-install package. See [verification](docs/VERIFICATION.md) and [candidate update instructions](docs/OCTOBER_UPDATE.md).
 
 ## 0.4.0 alpha
 

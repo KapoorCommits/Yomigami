@@ -13,15 +13,15 @@ An open-source reader for Kindle, with a library of its own.</p>
 
 Yomigami brings manga, PDFs and EPUBs together in a cover-first library. Open a book, pick up at your bookmark, and hide the controls when you want the whole screen for reading. Send a book from your phone, collect passages worth remembering, or queue the next chapters while you read.
 
-It runs independently of your separately installed KOReader, using its own pinned, private KOReader-derived runtime and Rakuyomi's manga engine. Updating KOReader does not replace Yomigami's app files.
+It runs independently of your separately installed KOReader, using its own copy of KOReader's reading components and Rakuyomi's manga engine. Updating KOReader does not replace Yomigami's app files.
 
-> **Know what you're installing.** The latest source includes the October 2026 reader updates below. The published **0.4.0 alpha installer is older** and does not include all these features. The development target is a **jailbroken Kindle Paperwhite 12, firmware 5.18.5.0.1**; other devices and firmware versions are unverified. See the [verification record](docs/VERIFICATION.md) for what has actually been tested.
+> **Know what you're installing.** The **0.5.0 RC2 update** includes the features below and is an early testing release for people who already have Yomigami installed. The **0.4.0 alpha ZIP** is the older first-install package. The development target is a **jailbroken Kindle Paperwhite 12, firmware 5.18.5.0.1**; other devices and firmware versions are unverified. See the [verification record](docs/VERIFICATION.md) for what has actually been tested.
 
 ## What you can do
 
 | Make it your library | Make the page yours | Bring the next book |
 | --- | --- | --- |
-| Cover grid and chapter menus | PDF, EPUB and CBZ reading | Search 20 bundled manga adapters |
+| Cover grid and chapter menus | PDF, EPUB and CBZ reading | Search 20 bundled manga sources |
 | Saved page and chapter bookmarks | Crop, zoom, contrast and reading direction | Queue individual chapters or a whole series |
 | Rename, trash and restore books | Per-book settings and EPUB font size | Follow series and check for new chapters |
 | Per-book storage usage | Light-grey highlights, notes and Markdown export | Resume supported PDF/EPUB downloads |
@@ -35,7 +35,7 @@ Chapter menus mark your current place with a ribbon. Returning to Library or qui
 
 In an EPUB or PDF with a text layer, hold a page to open its text, then hold and drag to select a passage. Save it as a highlight or attach a note. New highlights appear as **light-grey backgrounds on the original page**, keeping the lettering dark.
 
-Highlights persist across reopening. EPUB passage context is used to relocate them after reflow; ambiguous matches remain in your notes instead of being shaded in the wrong place. Export highlights and notes as Markdown. Image-only scans support page notes; OCR is not included.
+Highlights persist across reopening. When an EPUB font size changes, Yomigami looks for the same passage in its new position; if it cannot identify the passage confidently, it keeps your saved note without marking the wrong text. Export highlights and notes as Markdown. Image-only scans support page notes; OCR is not included.
 
 ### Send a book without a cable
 
@@ -49,7 +49,7 @@ Optional pre-rendering follows your navigation direction, preparing four pages a
 
 Twenty English-capable adapters include **Weeb Central and MangaDex**. Search results identify the source; inspect chapters and choose what to download. Manga queues support progress, pause, retry and background reading. Follow a series and use **+ → Followed series** to check for missing chapters; checks are manual, not push notifications.
 
-PDF/EPUB queues retain progress and resume where the server supports safe range requests. Sources that cannot safely resume restart from the beginning. Transfers run while Yomigami is open. [Bundled source list](docs/SOURCES.md).
+PDF/EPUB downloads remember their progress and can pick up where they stopped when the website supports it. Sources that cannot safely resume restart from the beginning. Transfers run while Yomigami is open. [Bundled source list](docs/SOURCES.md).
 
 ### An optional lock for your reading space
 
@@ -79,7 +79,7 @@ You need an **already jailbroken compatible Kindle** and a working scriptlet/boo
 | --- | --- |
 | Try the published 0.4.0 alpha | [Download its Paperwhite 12 installer ZIP](https://github.com/KapoorCommits/Yomigami/releases/download/v0.4.0-alpha/Yomigami-0.4.0-Paperwhite12-Install.zip) · [Installation guide](docs/INSTALL.md) |
 | Build the latest source | [Build instructions](docs/BUILDING.md) |
-| Update an existing installation with the latest reader candidate | [October update instructions](docs/OCTOBER_UPDATE.md) |
+| Already have Yomigami? Get the new features | [Download the 0.5.0 RC2 update ZIP](https://github.com/KapoorCommits/Yomigami/releases/download/v0.5.0-rc2/Yomigami-Highlights-Update.zip) · [Simple update steps](docs/OCTOBER_UPDATE.md) |
 | Understand device support and test coverage | [Verification record](docs/VERIFICATION.md) |
 
 For the published installer: extract the ZIP on your computer, copy `yomigami-0.4.0.tar.gz` to Kindle storage root and `documents/Yomigami.sh` into `documents`, then disconnect USB and open **Yomigami**. Leave the tar.gz compressed. This first-install package refuses to overwrite an existing installation.
@@ -92,7 +92,7 @@ The PDFs section includes Gutenberg discovery through Gutendex, Open Textbook Li
 
 Websites, account limits and source adapters change. Bundled adapters are not a promise that every provider works at all times. **No commercial books, manga chapters, personal reading data or credentials are distributed with this repository.**
 
-## Current boundaries
+## What to know before using it
 
 - This is experimental software, developed and exercised on one Kindle model/firmware combination.
 - Local regression checks passed for the latest passcode and on-page highlights; physical touch, sleep and network behavior still need broader device testing.
