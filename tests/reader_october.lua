@@ -22,7 +22,7 @@ for i=1,12 do app:refreshPage(1,'page')end;assert(modes[11]=='partial' and modes
 app.state.refresh_text=0;app:refreshPage(1,'page');assert(modes[#modes]=='partial');UI.setDirty=dirty
 app.state.tap_zones='forward';app:onDoubleTap();assert(app.chrome_hidden);app:onDoubleTap();assert(not app.chrome_hidden)
 local text=app.doc:pageText(app.nav.page);assert(text:find('Passage',1,true))
-app:pageTextNotes();local viewer=UI:getTopmostVisibleWidget();assert(viewer.text_selection_callback);viewer:handleTextSelection('Selected passage',1,1,2);local selection=UI:getTopmostVisibleWidget();assert(selection.item_table[1].text=='Save highlight');selection.item_table[1].callback();UI:close(viewer)
+app:pageTextNotes();local viewer=UI:getTopmostVisibleWidget();assert(viewer.text_selection_callback);viewer:handleTextSelection(viewer.text:match('[^\n]+'),1);local selection=UI:getTopmostVisibleWidget();assert(selection.item_table[1].text=='Save highlight');selection.item_table[1].callback();UI:close(viewer)
 local entry=app:addAnnotation('An exact excerpt','A meaningful note');assert(entry.page==app.nav.page)
 local export=assert(app:exportAnnotations());local f=assert(io.open(export));local markdown=f:read('*a');f:close();assert(markdown:find('> An exact excerpt',1,true) and markdown:find('A meaningful note',1,true))
 assert(Store.load(app.root..'/state.json',{}).annotations[epub.path][1])

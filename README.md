@@ -122,8 +122,10 @@ resumable PDF/EPUB downloads, updated book sources, and the following reader wor
 - Hold a page to open selectable text. Hold/drag within that view to save a highlight
   or attach a note. Scans without a text layer support page notes, not OCR selection.
   **Options → Text, notes & controls → Highlights & notes** lists and exports them
-  as Markdown under `yomigami/data/exports`. EPUB locations are approximate after reflow;
-  highlights are collected excerpts, not overlays drawn onto the original page.
+  as Markdown under `yomigami/data/exports`. New highlights appear as light-grey word
+  backgrounds on the original page. EPUB anchors relocate after reflow using passage
+  context; ambiguous matches remain saved but are not shaded. Older excerpt-only
+  entries remain in the notes list, with approximate navigation after reflow.
 - Separate manga/text full-refresh intervals (1, 6, 12, never), per-book tap zones,
   and an optional current-book cover during Yomigami sleep. In whole-page-forward mode,
   double-tap the page to show the toolbar;

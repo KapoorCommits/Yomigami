@@ -21,12 +21,12 @@ function App:renderPage()
     local cached=self.page_cache[key]
     if cached then
         if self.page_image then self.page_image:free()end
-        self.page_image=cached.image:copy();self.content_height=cached.h;self.content_width=cached.w;self.render_error=nil;self.cache_hits=(self.cache_hits or 0)+1
+        self.page_transform=cached.transform;self.page_image=cached.image:copy();self.content_height=cached.h;self.content_width=cached.w;self.render_error=nil;self.cache_hits=(self.cache_hits or 0)+1
     else
         self:renderPageUncached()
         if self.page_image and self.state.prefetch~=false then
             if self.page_cache[key] then self.page_cache[key].image:free()end
-            self.page_cache[key]={page=self.nav.page,image=self.page_image:copy(),h=self.content_height,w=self.content_width}
+            self.page_cache[key]={page=self.nav.page,image=self.page_image:copy(),h=self.content_height,w=self.content_width,transform=self.page_transform}
         end
     end
     self:schedulePrefetch()
@@ -63,16 +63,16 @@ function App:schedulePrefetch()
             warmPan=false
             local key=page..'/'..pan..'/'..pan_x
             if not self.page_cache[key]then
-                local ok,image,h,w=pcall(self.doc.render,self.doc,page,self.w,self:readerHeight(),self.state.fit,pan,self.zoom,pan_x,self.state.contrast,self.state.autocrop)
-                if ok then self.page_cache[key]={page=page,image=image,h=h,w=w};self:trimPageCache()end
+                local ok,image,h,w,transform=pcall(self.doc.render,self.doc,page,self.w,self:readerHeight(),self.state.fit,pan,self.zoom,pan_x,self.state.contrast,self.state.autocrop)
+                if ok then self.page_cache[key]={page=page,image=image,h=h,w=w,transform=transform};self:trimPageCache()end
             end
             UI:scheduleIn(.02,self.prefetch_tick);return
         end
         i=i+1;local n=targets[i];if not n then return end
         local key=n..'/0/0'
         if not self.page_cache[key]then
-            local ok,image,h,w=pcall(self.doc.render,self.doc,n,self.w,self:readerHeight(),self.state.fit,0,self.zoom,0,self.state.contrast,self.state.autocrop)
-            if ok then self.page_cache[key]={page=n,image=image,h=h,w=w};self:trimPageCache()end
+            local ok,image,h,w,transform=pcall(self.doc.render,self.doc,n,self.w,self:readerHeight(),self.state.fit,0,self.zoom,0,self.state.contrast,self.state.autocrop)
+            if ok then self.page_cache[key]={page=n,image=image,h=h,w=w,transform=transform};self:trimPageCache()end
         end
         UI:scheduleIn(.02,self.prefetch_tick)
     end

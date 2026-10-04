@@ -2,7 +2,7 @@
 from pathlib import Path
 import os, subprocess, tempfile
 r=Path(__file__).resolve().parents[1]
-tests=['ui','features','toolbar','design','discovery','reader_upgrades','books','book_sources_202610','wifi_ui','reader_october','passcode']
+tests=['ui','features','toolbar','design','discovery','reader_upgrades','books','book_sources_202610','wifi_ui','reader_october','passcode','highlights']
 for name in tests:
     with tempfile.TemporaryDirectory(prefix='yomigami-reader-') as home:
         env=dict(os.environ,YOMIGAMI_HOME=home,YOMIGAMI_NO_ENGINE='1',SDL_VIDEODRIVER='dummy',YOMIGAMI_TEST=str(r/'tests'/f'{name}.lua'))

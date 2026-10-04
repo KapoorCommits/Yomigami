@@ -210,8 +210,8 @@ end
 function App:renderPageUncached()
     if self.page_image then self.page_image:free();self.page_image=nil end
     local vh=self:readerHeight()
-    local ok,image,content,content_width=pcall(self.doc.render,self.doc,self.nav.page,self.w,vh,self.state.fit,self.nav.offset,self.zoom,self.pan_x,self.state.contrast,self.state.autocrop)
-    if ok then self.page_image=image;self.content_height=content;self.content_width=content_width;self.render_error=nil
+    local ok,image,content,content_width,transform=pcall(self.doc.render,self.doc,self.nav.page,self.w,vh,self.state.fit,self.nav.offset,self.zoom,self.pan_x,self.state.contrast,self.state.autocrop)
+    if ok then self.page_transform=transform;self.page_image=image;self.content_height=content;self.content_width=content_width;self.render_error=nil
     else self.render_error=tostring(image);self.content_height=vh end
 end
 function App:saveProgress()
@@ -252,6 +252,7 @@ function App:paintReader(bb)
     if self.page_image then
         local image=self.page_image
         bb:blitFrom(image,math.floor((self.w-image:getWidth())/2),top+math.floor((vh-image:getHeight())/2),0,0,image:getWidth(),image:getHeight())
+        self:paintHighlights(bb)
     elseif self.render_error then self:label(bb,'Page could not be rendered. Try another page.',margin,top+self:s(30),14,false,self.w-2*margin) end
     local foot=self.h-self:s(40)
     if not self.chrome_hidden then

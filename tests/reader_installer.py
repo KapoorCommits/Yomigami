@@ -1,7 +1,7 @@
 from pathlib import Path
 import os,subprocess,tempfile,shutil
-r=Path(__file__).resolve().parents[1];package=r/'dist/yomigami-passcode-20261004'
-assert (package/'Update Yomigami Passcode.sh').stat().st_size<100000
+r=Path(__file__).resolve().parents[1];package=r/'dist/yomigami-highlights-20261004'
+assert (package/'Update Yomigami Highlights.sh').stat().st_size<100000
 assert (package/'Yomigami.sh').stat().st_size<100000
 for mode in ['success','bad-checksum','syntax-failure','swap-failure','cover-failure']:
  with tempfile.TemporaryDirectory() as d:
