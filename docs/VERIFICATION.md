@@ -136,3 +136,90 @@ Actual Kindle cover-cache refresh and appearance remain pending user confirmatio
   quitting the app cancels active book transfers. Manga queue remains persistent.
 - Sign-in password is used in memory only; only server/session tokens are saved locally.
   These tokens are not encrypted on Kindle storage. Sign out removes the saved session.
+
+## Version 0.5.0 test candidate
+
+- PDF/EPUB queue persists across exits, retries temporary failures with bounded backoff,
+  supports pause/retry/cancel, and preserves partial downloads. Range resume requires
+  server validators and matching byte ranges; unsupported servers restart safely.
+- Download confirmation shows server-reported size and available space. Unknown sizes
+  remain explicitly unknown. Files are limited to 512 MB with a 64 MB free-space reserve.
+- Native regression tests cover interrupted/resumed transfers, ignored Range responses,
+  invalid ranges, low space, queue recovery, and isolation of per-book reading settings.
+- Library Storage sums real book/chapter bytes and reports partial downloads and trash.
+  Manga sources do not expose reliable total sizes before downloading.
+- Send to Yomigami uses a temporary local HTTP server and session QR code. Native desktop
+  integration tests verify exact uploaded PDF bytes, invalid-file rejection, token/origin
+  checks, path traversal rejection and overwrite protection. Closing the receiver stops
+  its server; sessions expire after 30 minutes. Use only a trusted local Wi-Fi network.
+- Live HTTPS PDF probe/download and native QR rendering passed on macOS. Kindle Wi-Fi
+  reachability, QR transfer from a phone, and new storage/preferences UI need device checks.
+
+### PDF import entry (2026-09-19)
+
+- PDFs & ebooks now opens the existing local receiver through “Import PDF From Anywhere”.
+  Successful startup closes the source menu so Done returns directly to the library.
+- Kindle receiver sessions add only their temporary TCP port to INPUT/OUTPUT and remove
+  those rules on close; partial setup failure rolls back the first rule.
+- macOS runtime checks passed for the menu action, rendered layout, receiver start/stop,
+  and mocked Kindle firewall success/failure cleanup. Real HTTP checks passed for exact
+  PDF bytes, invalid documents, token/origin/path restrictions and duplicate protection.
+- Physical phone-to-Kindle connectivity and firewall behavior remain unverified for this
+  change. There is no native AirDrop implementation; use the same-Wi-Fi browser URL/QR.
+
+### Book sources (2026-10-02)
+
+- Removed the inactive PDFDrive option; pdfdrive.webs.nf still returned HTTP 403.
+  Reviewed PDFDrive tools, ZlibraryKO's current API implementation, and
+  right9code/annas-fetch.koplugin. The latter's mirror scraper was not copied.
+- Added the official Open Textbook Library JSON search API, filtering to HTTPS
+  direct PDF links. Publisher landing-page entries are excluded. Some result
+  pages can therefore be empty; Next continues through the catalog.
+- Live native-runtime test: search “algebra”, download College Algebra from its
+  publisher, and open the PDF: 6,105,538 bytes, 716 pages. This confirms one sample,
+  not availability of every publisher link or unrestricted commercial books.
+- Z-Library handles blocked/expired sessions, moved endpoints, structured errors,
+  and missing result arrays explicitly. An unavailable login endpoint can fall
+  back once to /eapi/user/login; no retry on rate limiting or HTTP 403. Credentials
+  are not forwarded to redirected hosts. Authenticated live access remains unverified.
+- Anna’s Archive: free search/download uses the phone/computer browser followed
+  by existing Wi-Fi import. Automated search returned HTTP 403. Direct book-link
+  downloads use the documented member API; a membership secret key is required
+  and stored locally. API contract tests passed; no paid account was available
+  for an authenticated live test. Challenges are not bypassed.
+- Regression checks passed: source menu bounds, API error contracts, login fallback,
+  textbook filtering, browser-link validation, Wi-Fi receiver lifecycle and HTTP
+  byte-for-byte import. The Kindle has not yet received this October update.
+
+### October reader update (2026-10-02)
+
+- Nine core checks and ten isolated reader suites passed, including a 1272×1696
+  EPUB fixture, saved font settings, proportional reflow position, text selection
+  callback, persistent highlights/notes and Markdown export.
+- Injected file-sync and rename failures preserve the previous state. A missing
+  or invalid main file recovers a validated backup; corrupt bytes never replace
+  that backup. These simulations do not replace a physical power-loss test.
+- Backward navigation prepares the previous page first; tall-page next viewport
+  and revisit caching were exercised. Render signatures include reading direction
+  and font size. Cache remains bounded to 32 MB.
+- Follow/unfollow, refresh, missing-chapter selection, duplicate queue avoidance,
+  and source failure preservation passed with a simulated source API. Actual manga
+  availability and device/network behavior still require a Kindle check.
+- Cover sleep rendering, double-tap toolbar access, and separate refresh intervals
+  passed locally. Hardware sleep/wake and touch gesture behavior remain unverified.
+- Installer simulations passed: success, bad archive checksum, Lua syntax failure,
+  and failed replacement rollback. Existing book and state bytes were preserved.
+- `python3 scripts/make_reader_update.py` builds a standalone library updater and
+  ZIP without KUAL. It updates only app files and backs up the previous app. It does
+  not patch native Home, replace the runtime, change sources or publish a release.
+- Deferred: continuous webtoon layout, landscape/two-page spreads, battery-aware
+  scheduling, OCR selection, and highlights drawn directly over original pages.
+
+### October 4 reader and publication update
+
+- Twelve isolated reader suites passed, including passcode setup/verification/failure handling and light-grey on-page highlight rendering.
+- Highlight checks covered real local PDF text extraction, preserved black lettering, save/reopen, zoom/pan transforms, EPUB reflow relocation and rejection of ambiguous text anchors. The user's PDF is not included in source or test fixtures; the committed suite defaults to original fixtures, with an optional external sample path.
+- Five installer cases passed: success, bad checksum, syntax failure, app replacement failure and cover replacement failure.
+- Reader/passcode installation logs were read back from the Kindle. The user confirmed the reader functioning; individual passcode behaviors still need physical confirmation.
+- The 586 × 880 caption-free cover, highlight candidate package and user book were transferred with byte-for-byte readback verification. Highlight runtime/touch confirmation remains pending.
+- Home-screen customization and storage cleanup were device maintenance, not public reader features or files. No device state, keys or personal books are part of publication.

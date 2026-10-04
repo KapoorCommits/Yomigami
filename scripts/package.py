@@ -52,7 +52,7 @@ shutil.copy2(ROOT/'assets/Welcome.pdf',APP/'data/library/Welcome.pdf')
     'languages':['en'],'concurrent_requests_pages':8,'optimize_image':False,'storage_size_limit':'100 GB','search_view_mode':'base','ram_storage_enabled':False,'enabled_cron_check_mangas_update':False,
     'delete_downloaded_after_read':False,'delete_downloaded_on_remove':False},indent=2))
 shutil.copytree(ROOT/'assets/sources',APP/'data/sources/sources',dirs_exist_ok=True)
-(APP/'app/version.txt').write_text('0.4.0-alpha\n')
+(APP/'app/version.txt').write_text('0.5.0-alpha\n')
 (OUT/'documents').mkdir();shutil.copy2(ROOT/'launcher/Yomigami.sh',OUT/'documents/Yomigami.sh')
 EXT=OUT/'extensions/yomigami';EXT.mkdir(parents=True)
 for name in ('config.xml','menu.json'):shutil.copy2(ROOT/'launcher'/name,EXT/name)
@@ -64,10 +64,10 @@ lock=json.loads((ROOT/'runtime-lock.json').read_text())
 (ROOT/'runtime-lock.json').write_text(json.dumps(lock,indent=2))
 files={str(f.relative_to(OUT)):hashlib.sha256(f.read_bytes()).hexdigest() for f in OUT.rglob('*') if f.is_file()}
 (ROOT/'dist/manifest.json').write_text(json.dumps(files,indent=2))
-zip_path=ROOT/'dist/Yomigami-0.4.0-kindlehf.zip'
+zip_path=ROOT/'dist/Yomigami-0.5.0-kindlehf.zip'
 with zipfile.ZipFile(zip_path,'w',zipfile.ZIP_DEFLATED) as z:
     for f in OUT.rglob('*'):
         if f.is_file():z.write(f,f.relative_to(OUT))
-with tarfile.open(ROOT/'dist/yomigami-0.4.0.tar.gz','w:gz') as t:
+with tarfile.open(ROOT/'dist/yomigami-0.5.0.tar.gz','w:gz') as t:
     t.add(APP,arcname='yomigami')
 print(f'Packaged {len(files)} files; {zip_path.stat().st_size/1024/1024:.1f} MiB zip')

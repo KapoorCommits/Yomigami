@@ -26,6 +26,10 @@ Copy `dist/yomigami-update-0.4.0.tar.gz` to the storage root and
 It checks its payload and retains a backup of the prior app, settings and bookmarks.
 This updater applies 0.4.0 to earlier versions; it does not reinstall an already marked 0.4.0.
 
+## Latest source candidate
+
+The instructions above install the published 0.4.0 binary. For newer features, see the [October update](OCTOBER_UPDATE.md) and [reader guide](READER_GUIDE.md). The sections below describe the older release unless explicitly marked otherwise.
+
 ## Read your books
 
 Copy PDF, EPUB or CBZ files into `/mnt/us/yomigami/data/library`, then choose **+ → Rescan**.

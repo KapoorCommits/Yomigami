@@ -1,6 +1,8 @@
 #!/bin/sh
 set -eu
 ROOT="$(CDPATH='' cd -- "$(dirname -- "$0")" && pwd -P)"
+exec >>"$ROOT/launcher.log" 2>&1
+printf "Yomigami launch: %s\n" "$(date)"
 export YOMIGAMI_APP="$ROOT/app"
 export YOMIGAMI_HOME="$ROOT/data"
 export KO_HOME="$YOMIGAMI_HOME/runtime"
@@ -10,7 +12,15 @@ export RAKUYOMI_TCP_PORT="$YOMIGAMI_SOURCE_PORT"
 LOCK=/var/tmp/yomigami.lock
 if ! mkdir "$LOCK" 2>/dev/null; then
     OLD_PID="$(cat "$LOCK/pid" 2>/dev/null || true)"
-    if [ -n "$OLD_PID" ] && kill -0 "$OLD_PID" 2>/dev/null; then exit 0; fi
+    case "$OLD_PID" in
+        ''|*[!0-9]*) OLD_PID='' ;;
+    esac
+    if [ -n "$OLD_PID" ] && kill -0 "$OLD_PID" 2>/dev/null; then
+        OLD_CMD="$(tr '\000' ' ' <"/proc/$OLD_PID/cmdline" 2>/dev/null || true)"
+        case "$OLD_CMD" in
+            *"$ROOT/launch.sh"*) echo "Yomigami launcher already running: $OLD_PID"; exit 0 ;;
+        esac
+    fi
     rm -f "$LOCK/pid"
     rmdir "$LOCK" 2>/dev/null || exit 1
     mkdir "$LOCK" || exit 1

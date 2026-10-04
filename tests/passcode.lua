@@ -1,0 +1,26 @@
+-- SPDX-License-Identifier: AGPL-3.0-or-later
+local app=...
+local P=require('passcode');local UI=require('ui/uimanager');local M=require('passcode_ui');local Store=require('storage')
+assert(P.derive('1234','test-salt',2)=='7da307f9d160c19b7ffe03d0367b5f7a3dd7164f1356ed24ad35af62a9cbbd93')
+assert(P.valid('0000') and P.valid('12345678'));assert(not P.valid('123') and not P.valid('1e23') and not P.valid('123456789'))
+assert(not P.load(app.root).enabled)
+local opened=false;M.unlock(app.root,function()opened=true end,function()end);assert(opened)
+assert(P.set(app.root,'001234'));assert(P.load(app.root).enabled)
+local f=assert(io.open(app.root..'/passcode.json'));local raw=f:read('*a');f:close();assert(not raw:find('001234',1,true))
+assert(not P.verify(app.root,'1111'));assert(P.verify(app.root,'001234'))
+for i=1,5 do assert(not P.verify(app.root,'1111'))end
+local ok,err=P.verify(app.root,'001234');assert(not ok and err:find('wait'))
+local v=P.load(app.root);v.until_time=0;assert(Store.save(app.root..'/passcode.json',v));assert(P.verify(app.root,'001234'))
+opened=false;local cancelled=false;M.unlock(app.root,function()opened=true end,function()cancelled=true end)
+local pad=UI:getTopmostVisibleWidget();assert(pad.title=='Enter your passcode' and not opened)
+local BB=require('ffi/blitbuffer');local bb=BB.new(app.w,app.h,BB.TYPE_BB8);pad:paintTo(bb,0,0);bb:free();assert(#pad.hits==13)
+for digit in ('001234'):gmatch('.')do pad:press(digit)end;pad:press('OK');assert(opened)
+M.unlock(app.root,function()error('Must not unlock on cancel')end,function()cancelled=true end);UI:getTopmostVisibleWidget():onBack();assert(cancelled)
+local save=Store.save;Store.save=function()return nil,'disk full'end;assert(not P.verify(app.root,'001234'));assert(not P.disable(app.root));Store.save=save
+assert(P.disable(app.root));assert(not P.load(app.root).enabled)
+M.settings(app);local menu=UI:getTopmostVisibleWidget();menu.item_table[1].callback();pad=UI:getTopmostVisibleWidget()
+pad.submit(pad,'1234');pad.submit(pad,'4321');assert(pad.error:find('match'));assert(not P.load(app.root).enabled)
+pad.submit(pad,'1234');pad.submit(pad,'1234');assert(P.verify(app.root,'1234'))
+local f=assert(io.open(app.root..'/passcode.json','w'));f:write('{bad');f:close();assert(not P.load(app.root));assert(not P.verify(app.root,'1234'))
+os.remove(app.root..'/passcode.json')
+print('PASS numeric passcode, PBKDF2 vector, setup, masked keypad, launch gate, retry limit and failure handling')

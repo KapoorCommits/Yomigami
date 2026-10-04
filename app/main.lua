@@ -19,14 +19,15 @@ function App:init()
     self.scale=self.w/600
     self.dimen=Geom:new{x=0,y=0,w=self.w,h=self.h}
     self.ges_events={Tap={GestureRange:new{ges='tap',range=self.dimen}},Swipe={GestureRange:new{ges='swipe',range=self.dimen}}}
-    for event,ges in pairs({Hold='hold',Pinch='pinch',Spread='spread'}) do
+    for event,ges in pairs({Hold='hold',Pinch='pinch',Spread='spread',DoubleTap='double_tap'}) do
         self.ges_events[event]={GestureRange:new{ges=ges,range=self.dimen}}
     end
     self.key_events={Back={{'Back'},{'Esc'}},Forward={{'Right'},{'PgFwd'},{'Space'}},Backward={{'Left'},{'PgBack'}}}
-    self.state,self.state_error=Store.load(self.root..'/state.json',{progress={},direction='rtl',fit='page'})
+    self.state,self.state_error,self.recovery_notice=Store.load(self.root..'/state.json',{progress={},direction='rtl',fit='page'})
     self.state.progress=self.state.progress or {}
     self.state.downloads=self.state.downloads or {}
     self.state.series=self.state.series or {}
+    self:initBookPreferences()
     self.jobs={}
     self.state.aliases=self.state.aliases or {}
     self.state.trash=self.state.trash or {}
@@ -35,10 +36,12 @@ function App:init()
     self:scan()
     if (Device.screen.night_mode or false)~=(self.state.dark_mode or false) then Device.screen:toggleNightMode() end
     self:startDownloads()
+    self:startBookDownloads()
 end
 function App:s(n) return math.floor(n*self.scale+.5) end
 function App:save()
     if self.state_error then return nil,self.state_error end -- Never overwrite an unreadable original.
+    self:rememberReadingSettings()
     local ok,err=Store.save(self.root..'/state.json',self.state)
     if not ok then self:message('Progress could not be saved: '..tostring(err)) end
     return ok,err
@@ -47,7 +50,8 @@ function App:message(text) UI:show(Info:new{text=tostring(text),timeout=5}) end
 function App:refresh() UI:setDirty(self,'full') end
 function App:refreshPage(delta,result)
     self.turns_since_full=(self.turns_since_full or 0)+1
-    local full=self.turns_since_full>=6
+    local interval=self.state[self.book and self.book.format=='CBZ' and 'refresh_manga' or 'refresh_text'] or 6
+    local full=interval>0 and self.turns_since_full>=interval
     if full then self.turns_since_full=0 end
     if result=='page' and not full and Device:canDoSwipeAnimation() and self.state.animation~=false then
         Device.screen:setSwipeAnimations(true)
@@ -184,7 +188,9 @@ function App:changeShelf(delta)
 end
 function App:openBook(book,password)
     if book.chapters then return self:chapterMenu(book) end
-    local ok,document=pcall(Doc.open,book.path,password)
+    local settings=self.state.book_settings[book.series_key or book.path] or self.state.reading_defaults
+    local layout={width=self.w,height=self.h-self:s(94),font_size=self:s(settings.font_size or 24)}
+    local ok,document=pcall(Doc.open,book.path,password,layout)
     if not ok then
         if tostring(document):find('needs a password',1,true) then
             return self:input('PDF password',function(value) self:openBook(book,value) end,true)
@@ -192,18 +198,20 @@ function App:openBook(book,password)
         return self:message('Unable to open '..book.title..'\n'..tostring(document))
     end
     self:clearPageCache()
-    if self.doc then self.doc:close() end
+    if self.doc then self:saveProgress();self.doc:close() end
     self:clearCovers();self.doc=document;self.book=book
     local saved=self.state.progress[book.path]
-    self.nav=Nav.new(document.count,saved and saved.page)
-    self.screen_name='reader';self.boundary=false;self.chrome_hidden=false;self.zoom=1;self.pan_x=0
+    local page=saved and saved.page
+    if saved and document.reflowable and saved.count~=document.count then page=math.floor(((saved.page-1)/math.max(1,saved.count-1))*(document.count-1))+1 end
+    self.nav=Nav.new(document.count,page)
+    self.screen_name='reader';self.boundary=false;self.chrome_hidden=false;self.zoom=self:loadBookSettings();self.pan_x=0
     self:renderPage();self:saveProgress();self:refresh()
 end
 function App:renderPageUncached()
     if self.page_image then self.page_image:free();self.page_image=nil end
     local vh=self:readerHeight()
-    local ok,image,content,content_width=pcall(self.doc.render,self.doc,self.nav.page,self.w,vh,self.state.fit,self.nav.offset,self.zoom,self.pan_x,self.state.contrast,self.state.autocrop)
-    if ok then self.page_image=image;self.content_height=content;self.content_width=content_width;self.render_error=nil
+    local ok,image,content,content_width,transform=pcall(self.doc.render,self.doc,self.nav.page,self.w,vh,self.state.fit,self.nav.offset,self.zoom,self.pan_x,self.state.contrast,self.state.autocrop)
+    if ok then self.page_transform=transform;self.page_image=image;self.content_height=content;self.content_width=content_width;self.render_error=nil
     else self.render_error=tostring(image);self.content_height=vh end
 end
 function App:saveProgress()
@@ -244,6 +252,7 @@ function App:paintReader(bb)
     if self.page_image then
         local image=self.page_image
         bb:blitFrom(image,math.floor((self.w-image:getWidth())/2),top+math.floor((vh-image:getHeight())/2),0,0,image:getWidth(),image:getHeight())
+        self:paintHighlights(bb)
     elseif self.render_error then self:label(bb,'Page could not be rendered. Try another page.',margin,top+self:s(30),14,false,self.w-2*margin) end
     local foot=self.h-self:s(40)
     if not self.chrome_hidden then
@@ -253,11 +262,15 @@ function App:paintReader(bb)
     self:label(bb,self.state.direction:upper(),self.w-self:s(60),foot+self:s(7),12,true,self:s(50))
     self:hit(0,foot,self.w,self:s(40),function() self:jumpDialog() end)
     end
+    if self.state.tap_zones=='forward' then
+        self:hit(0,top,self.w,vh,function()self:turn(1)end);return
+    end
     self:hit(0,top,self.w*.34,vh,function() self:turn(self.state.direction=='rtl' and 1 or -1) end)
     self:hit(self.w*.66,top,self.w*.34,vh,function() self:turn(self.state.direction=='rtl' and -1 or 1) end)
     self:hit(self.w*.34,top,self.w*.32,vh,function() self:toggleChrome() end)
 end
 function App:turn(delta)
+    self.navigation_direction=delta<0 and -1 or 1
     if self.screen_name~='reader' then return self:changeShelf(delta) end
     if self.boundary then return true end
     local oldpage=self.nav.page
@@ -290,7 +303,7 @@ function App:closeBook()
     self:saveProgress()
     if self.page_image then self.page_image:free();self.page_image=nil end
     if self.doc then self.doc:close();self.doc=nil end
-    self.book=nil;self.screen_name='library';self:refresh()
+    self.book=nil;self:restoreReadingDefaults();self.screen_name='library';self:refresh()
 end
 function App:onTap(_,g)
     for _,hit in ipairs(self.hits) do
@@ -310,8 +323,8 @@ end
 function App:onForward() return self:turn(1) end
 function App:onBackward() return self:turn(-1) end
 function App:onBack() if self.doc then self:closeBook() else self:quit() end;return true end
-function App:quit() self:clearPageCache();self:stopDownloads();require('requests'):close();self:saveProgress();self:clearCovers();if self.doc then self.doc:close();self.doc=nil end;UI:quit() end
-function App:onSuspend() self:saveProgress() end
+function App:quit() if self.wifi_receiver then self.wifi_receiver:onCloseWidget()end;self:stopBookDownloads();self:clearPageCache();self:stopDownloads();require('requests'):close();self:saveProgress();self:clearCovers();if self.doc then self.doc:close();self.doc=nil end;UI:quit() end
+function App:onSuspend() if self.wifi_receiver then self.wifi_receiver:onClose()end;self:saveProgress() end
 function App:onCloseWidget() self:saveProgress() end
 function App:input(title,callback,password)
     local Dialog=require('ui/widget/inputdialog');local dialog
@@ -333,17 +346,22 @@ function App:menu(title,items)
 end
 function App:jumpDialog()
     self:input('Go to page (1-'..self.nav.count..')',function(value)
-        if self.nav:jump(value) then self:renderPage();self:saveProgress();self:refresh() else self:message('Enter a valid page number.') end
+        local previous=self.nav.page
+        if self.nav:jump(value) then self.navigation_direction=self.nav.page<previous and -1 or 1; self:renderPage();self:saveProgress();self:refresh() else self:message('Enter a valid page number.') end
     end)
 end
 function App:readerOptions() require('options').show(self) end
 function App:libraryActions()
     self:menu('Your library',{
         {text='Import PDF, EPUB or CBZ',callback=function() self:chooseFile('/mnt/us/documents') end},
+        {text='Followed series / Check updates',callback=function()self:followedSeries()end},
+        {text='Storage',callback=function()self:showStorage()end},
+        {text='Book downloads',callback=function()self:bookDownloadsMenu()end},
+        {text='Send to Yomigami',callback=function()require('wifi_receive').show(self)end},
         {text='Recently deleted',callback=function() self:trashMenu() end},
         {text='Options',callback=function() self:readerOptions() end},
         {text='Rescan library',callback=function() self:scan() end},
-        {text='About Yomigami',callback=function() self:message('Yomigami 0.4.0 alpha\nIndependent reader and library.\nPrivate KOReader-derived runtime and MuPDF; Rakuyomi source engine.\nAGPL-3.0. Device validation pending.') end},
+        {text='About Yomigami',callback=function() self:message('Yomigami 0.5.0 alpha\nIndependent reader and library.\nPrivate KOReader-derived runtime and MuPDF; Rakuyomi source engine.\nAGPL-3.0. Device validation pending.') end},
         {text='Exit to Kindle',callback=function() self:quit() end},
     })
 end
@@ -403,7 +421,13 @@ function App:showSources() UI:show(require('discover'):new{owner=self}) end
 function App:searchManga(query,page) UI:show(require('discover'):new{owner=self,query=query,remote_page=page or 1,autosearch=true}) end
 function App:mangaResults(data,title,more) UI:show(require('discover'):new{owner=self,results=data,query=title,more_callback=more}) end
 function App:mangaDetails(m) UI:show(require('discover'):new{owner=self,manga=m}) end
+require('book_preferences')(App)
+require('book_queue')(App)
+require('storage_view')(App)
 require('reading_features')(App)
 require('downloads')(App)
 require('prefetch')(App)
+require('reader_extras')(App)
+require('annotations')(App)
+require('series_updates')(App)
 return App

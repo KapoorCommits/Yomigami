@@ -1,104 +1,122 @@
-<p align="center"><img src="docs/images/banner.svg" alt="Yomigami — A quieter home for your next chapter." width="100%"></p>
+<p align="center"><img src="docs/images/banner.svg" alt="Yomigami — Manga, books, and a place to return to." width="100%"></p>
 
 <p align="center">
-  <a href="LICENSE"><img alt="License: AGPL v3 or later" src="https://img.shields.io/badge/license-AGPL--3.0--or--later-35473b?style=flat-square"></a>
-  <img alt="Status: native alpha" src="https://img.shields.io/badge/status-native_alpha-8b6e46?style=flat-square">
-  <img alt="For jailbroken Kindle" src="https://img.shields.io/badge/made_for-jailbroken_Kindle-35473b?style=flat-square">
+<a href="LICENSE"><img alt="AGPL v3 or later" src="https://img.shields.io/badge/license-AGPL--3.0--or--later-35473b?style=flat-square"></a>
+<img alt="Experimental alpha" src="https://img.shields.io/badge/status-experimental_alpha-8b6e46?style=flat-square">
+<img alt="Jailbroken Kindle" src="https://img.shields.io/badge/built_for-jailbroken_Kindle-35473b?style=flat-square">
 </p>
 
 <p align="center"><b>Your manga. Your books. Your place in the story.</b><br>
-A standalone manga, PDF and EPUB reader that gives your Kindle a library of its own.</p>
+An open-source reader for Kindle, with a library of its own.</p>
 
-<p align="center"><a href="#a-reader-that-gets-out-of-the-way">Explore</a> · <a href="docs/INSTALL.md">Get started</a> · <a href="docs/BUILDING.md">Build</a> · <a href="CONTRIBUTING.md">Contribute</a> · <a href="#built-on-extraordinary-open-source-work">Credits</a></p>
+<p align="center"><a href="#what-you-can-do">Features</a> · <a href="#install-yomigami">Install</a> · <a href="docs/READER_GUIDE.md">Reader guide</a> · <a href="docs/BUILDING.md">Build</a> · <a href="#built-on-shared-foundations">Credits</a></p>
 
-## A reader that gets out of the way
+Yomigami brings manga, PDFs and EPUBs together in a cover-first library. Open a book, pick up at your bookmark, and hide the controls when you want the whole screen for reading. Send a book from your phone, collect passages worth remembering, or queue the next chapters while you read.
 
-Open a cover. Pick a chapter. Disappear into the page.
+It runs independently of your separately installed KOReader, using its own copy of KOReader's reading components and Rakuyomi's manga engine. Updating KOReader does not replace Yomigami's app files.
 
-Yomigami brings manga and books together in a calm, cover-first library. A ribbon marks where you stopped. A tap brings back the controls. The next pages can be prepared while you read, so there is less waiting between you and the story.
+> **Know what you're installing.** The **0.5.0 RC2 update** includes the features below and is an early testing release for people who already have Yomigami installed. The **0.4.0 alpha ZIP** is the older first-install package. The development target is a **jailbroken Kindle Paperwhite 12, firmware 5.18.5.0.1**; other devices and firmware versions are unverified. See the [verification record](docs/VERIFICATION.md) for what has actually been tested.
 
-It began with a simple frustration: updating KOReader could disturb the Rakuyomi reading experience. Yomigami gives the application its own home, its own state, and a pinned private runtime. Updating a separately installed KOReader does not replace Yomigami’s files.
+## What you can do
 
-**Independent of your KOReader installation. Deeply indebted to KOReader and Rakuyomi.**
-
-> **Native alpha · 0.4.0.** Developed for the jailbroken Kindle Paperwhite 12th generation, with firmware 5.18.5.0.1. Core reading and page turns have been exercised on that device; the latest PDF/EPUB discovery, dark-mode and display changes still need hardware confirmation. Other models are unverified. A prebuilt installer ZIP is available for this target; nearby firmware versions are not yet verified.
-
-## Make room for the story
-
-| In your library | On the page | Before your next read |
+| Make it your library | Make the page yours | Bring the next book |
 | --- | --- | --- |
-| Covers instead of a wall of filenames | PDF, EPUB and CBZ rendering | Search installed manga sources together |
-| Chapter menus with a reading ribbon | Brightness, warmth and contrast controls | Queue every chapter in one action |
-| Saved chapter and page on exit | Optional auto-crop and pinch zoom | Keep reading while manga downloads run |
-| Rename, trash and restore | Light/dark mode and a hideable toolbar | Browse ebooks and import your own files |
+| Cover grid and chapter menus | PDF, EPUB and CBZ reading | Search 20 bundled manga sources |
+| Saved page and chapter bookmarks | Crop, zoom, contrast and reading direction | Queue individual chapters or a whole series |
+| Rename, trash and restore books | Per-book settings and EPUB font size | Follow series and check for new chapters |
+| Per-book storage usage | Light-grey highlights, notes and Markdown export | Resume supported PDF/EPUB downloads |
+| Optional numeric app passcode | Light/dark mode, brightness and warmth | Local Wi-Fi import with a QR code |
 
-**A shelf that remembers.** Return to the library or quit to Kindle; your current chapter and page are saved. Chapters stay together, and the reading menu opens near your bookmark.
+### A shelf that remembers
 
-**Pages with breathing room.** Hide the toolbar, trim large white borders, adjust the tone of a scan, or enlarge a panel. Auto-crop fills the width; tall pages pan before advancing.
+Chapter menus mark your current place with a ribbon. Returning to Library or quitting saves progress. Reading settings belong to the book or manga series, so a crop or contrast adjustment for one scan doesn't change everything else. **Library → + → Storage** shows what occupies space; deleted books stay in Recently deleted until permanently removed.
 
-**Your next chapter, prepared.** Optional pre-rendering caches four upcoming pages and the previous page, within a 32 MB budget. It reduces repeat decoding; cold pages and e-ink refresh still take time.
+### Passages worth keeping
 
-**One search, several shelves.** Eleven English-capable source adapters are included, including Weeb Central and MangaDex. Results identify their source. Bulk manga downloads use a persistent queue, with progress, pause, retry and background reading. Website availability and account limits still apply.
+In an EPUB or PDF with a text layer, hold a page to open its text, then hold and drag to select a passage. Save it as a highlight or attach a note. New highlights appear as **light-grey backgrounds on the original page**, keeping the lettering dark.
+
+Highlights persist across reopening. When an EPUB font size changes, Yomigami looks for the same passage in its new position; if it cannot identify the passage confidently, it keeps your saved note without marking the wrong text. Export highlights and notes as Markdown. Image-only scans support page notes; OCR is not included.
+
+### Send a book without a cable
+
+Open **PDFs → Import PDF From Anywhere**, scan the QR code or open the displayed URL from a phone or computer on the same Wi-Fi, and upload a PDF, EPUB or CBZ. No cloud account or AirDrop is required. Keep the transfer screen open; closing it stops the receiver. [Transfer details and limits](docs/READER_GUIDE.md#wi-fi-import).
+
+### Your next chapter, prepared
+
+Optional pre-rendering follows your navigation direction, preparing four pages ahead and one behind within a 32 MB cache. Recently panned regions can be reused. Configure full-refresh intervals separately for manga and text, choose tap zones, or display the current book's cover during sleep. E-ink refresh and cold-page rendering still take time.
+
+### More to read, less to manage
+
+Twenty English-capable adapters include **Weeb Central and MangaDex**. Search results identify the source; inspect chapters and choose what to download. Manga queues support progress, pause, retry and background reading. Follow a series and use **+ → Followed series** to check for missing chapters; checks are manual, not push notifications.
+
+PDF/EPUB downloads remember their progress and can pick up where they stopped when the website supports it. Sources that cannot safely resume restart from the beginning. Transfers run while Yomigami is open. [Bundled source list](docs/SOURCES.md).
+
+### An optional lock for your reading space
+
+**Options → Passcode** enables a 4–8 digit code at app startup. Changing or disabling it requires the current code; repeated wrong attempts trigger a delay. It is an interface lock, **not file encryption**, and does not lock an already-open session after sleep. [Setup and recovery](docs/READER_GUIDE.md#passcode).
 
 ## A look inside
 
-These are native emulator captures at the Paperwhite’s 1272 × 1696 resolution, using original test books and sample metadata. They are not device photographs.
+These are emulator captures at the Paperwhite's 1272 × 1696 resolution, using original test books and sample metadata. They illustrate the library, chapter and options design; they are not device photographs or screenshots of every latest control.
 
 <p align="center">
-<img src="docs/images/library.png" width="31%" alt="Yomigami cover library with reading progress">
+<img src="docs/images/library.png" width="31%" alt="Cover library with reading progress">
 <img src="docs/images/chapters.png" width="31%" alt="Chapter menu with a bookmark ribbon">
-<img src="docs/images/options.png" width="31%" alt="Brightness, warmth, contrast and reading options">
+<img src="docs/images/options.png" width="31%" alt="Brightness, warmth and contrast options">
 </p>
 
-## Get started
+<details>
+<summary>The new Kindle launcher cover</summary>
+<p align="center"><img src="assets/icon.png" width="260" alt="Yomigami cover: a heron among mountains shaped like book pages"></p>
+A caption-free, 586 × 880 grayscale cover, encoded to preserve detail within Kindle's scanner limits.
+</details>
 
-Yomigami needs an **already jailbroken, compatible Kindle** and a working scriptlet launcher. It does not jailbreak your device.
+## Install Yomigami
 
-1. **[Download the Paperwhite 12 installer ZIP](https://github.com/KapoorCommits/Yomigami/releases/download/v0.4.0-alpha/Yomigami-0.4.0-Paperwhite12-Install.zip)** and extract it on your computer.
-2. Copy `yomigami-0.4.0.tar.gz` to the Kindle storage root and `documents/Yomigami.sh` into its `documents` folder. Leave the tar.gz compressed.
-3. Disconnect USB and open **Yomigami**. First launch checks the archive and installs the app.
+You need an **already jailbroken compatible Kindle** and a working scriptlet/book launcher. Yomigami does not jailbreak the device.
 
-No build tools are needed. The installer refuses to overwrite an existing Yomigami installation. See the [installation guide](docs/INSTALL.md) for details, or the [build guide](docs/BUILDING.md) to assemble it yourself. Try the original Reader Test before adding your books.
+| You want to… | Start here |
+| --- | --- |
+| Try the published 0.4.0 alpha | [Download its Paperwhite 12 installer ZIP](https://github.com/KapoorCommits/Yomigami/releases/download/v0.4.0-alpha/Yomigami-0.4.0-Paperwhite12-Install.zip) · [Installation guide](docs/INSTALL.md) |
+| Build the latest source | [Build instructions](docs/BUILDING.md) |
+| Already have Yomigami? Get the new features | [Download the 0.5.0 RC2 update ZIP](https://github.com/KapoorCommits/Yomigami/releases/download/v0.5.0-rc2/Yomigami-Highlights-Update.zip) · [Simple update steps](docs/OCTOBER_UPDATE.md) |
+| Understand device support and test coverage | [Verification record](docs/VERIFICATION.md) |
 
-Everything lives under `/mnt/us/yomigami`. Your separately installed KOReader and Rakuyomi remain separate. Keep a backup of your reading data before installing an alpha update.
+For the published installer: extract the ZIP on your computer, copy `yomigami-0.4.0.tar.gz` to Kindle storage root and `documents/Yomigami.sh` into `documents`, then disconnect USB and open **Yomigami**. Leave the tar.gz compressed. This first-install package refuses to overwrite an existing installation.
 
-## Beyond manga
+Your app and reading data live under `/mnt/us/yomigami`; your separate KOReader installation stays separate. Back up `yomigami/data` before alpha updates. The current reader updater validates checksums and Lua syntax, backs up the app and cover, and restores replaced files if installation fails. It does not patch Kindle Home or provide a general runtime-crash rollback feature.
 
-The **PDFs** button opens the PDF/EPUB browser:
+## Book discovery and source availability
 
-- **Project Gutenberg:** search classics through Gutendex and download EPUBs.
-- **Internet Archive:** discover publicly downloadable PDFs; full Archive downloads remain unverified.
-- **Direct links:** import a PDF or EPUB from an HTTPS download URL.
-- **Z-Library:** an independent account integration informed by ZlibraryKO’s plugin. Sign in on the Kindle with your current server address. Authenticated downloads remain unverified.
+The PDFs section includes Gutenberg discovery through Gutendex, Open Textbook Library, Internet Archive discovery, direct HTTPS links, and local Wi-Fi import. Account-based providers are experimental: Z-Library may return HTTP 403, and Anna's Archive uses browser handoff or a member-key download route. Authenticated provider access is not broadly hardware-verified. PDFDrive was removed after repeated failures.
 
-PDFDrive is listed as unavailable because the tested site returned an access error. EPUB reading uses a fixed reflow layout; font customization, text selection, annotations and DRM support are not implemented. No manga chapters or commercial ebooks are distributed with this repository.
+Websites, account limits and source adapters change. Bundled adapters are not a promise that every provider works at all times. **No commercial books, manga chapters, personal reading data or credentials are distributed with this repository.**
 
-## Honest about the early days
+## What to know before using it
 
-Yomigami is usable experimental software, not a promise that every source or every Kindle works. Source sites change. E-ink has physical refresh limits. Downloads run while the app is open; the manga queue survives restarts, but active PDF/EPUB transfers are cancelled when you quit.
+- This is experimental software, developed and exercised on one Kindle model/firmware combination.
+- Local regression checks passed for the latest passcode and on-page highlights; physical touch, sleep and network behavior still need broader device testing.
+- EPUB reading position after changing layout is approximate; highlight anchors are resolved separately by text context.
+- Wi-Fi import uses local HTTP with a temporary session token. Use a trusted network; interrupted uploads must be sent again.
+- No DRM removal, OCR, continuous webtoon scrolling, landscape/two-page spreads, or battery-aware download scheduling yet.
+- Kindle Home customization experiments are separate and are not part of the public reader installer.
 
-The [verification record](docs/VERIFICATION.md) separates device observations, emulator checks and unverified behavior. The [architecture guide](docs/ARCHITECTURE.md) explains the private runtime and the boundaries of the upstream review.
+See [what changed](CHANGELOG.md), [architecture](docs/ARCHITECTURE.md), and [security guidance](SECURITY.md).
 
-## Built on extraordinary open-source work
+## Built on shared foundations
 
-**[KOReader](https://github.com/koreader/koreader)** supplies the foundation that makes this possible on Kindle: device integration, e-ink display and input handling, power lifecycle, widgets, and the native document runtime. Yomigami includes a private, adapted KOReader-derived runtime; it is not a from-scratch replacement for that engineering.
+**[KOReader](https://github.com/koreader/koreader)** provides the Kindle device integration, e-ink display and input handling, power lifecycle, widgets, and native document runtime. Yomigami includes a private, adapted KOReader-derived runtime; it does not claim to replace that engineering from scratch.
 
-**[Rakuyomi](https://github.com/tachibana-shin/rakuyomi)** supplies the Rust source engine behind manga discovery and downloads. Its work made this standalone reading experience possible.
+**[Rakuyomi](https://github.com/tachibana-shin/rakuyomi)** provides the Rust engine behind manga discovery and downloads. Its work made Yomigami's standalone manga experience possible.
 
-Thank you also to **[Aidoku Community](https://github.com/Aidoku-Community/sources)** for source adapters, **[MuPDF](https://mupdf.com/)** for document rendering, **[ZlibraryKO](https://github.com/ZlibraryKO/zlibrary.koplugin)** for the Z-Library protocol reference, and the many upstream library, font and tooling contributors.
+Thank you also to **[Aidoku Community](https://github.com/Aidoku-Community/sources)** for adapters, **[MuPDF](https://mupdf.com/)** for rendering, **[ZlibraryKO](https://github.com/ZlibraryKO/zlibrary.koplugin)** for the Z-Library protocol reference, and all upstream library, font and tooling contributors. [Credits, licenses and source locations](THIRD_PARTY_NOTICES.md).
 
-Yomigami is an independent project, not an official release or endorsement from those projects. See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) for attribution and source locations.
+Yomigami is independent and is not an official release or endorsement of those projects.
 
-## Help shape the next chapter
+## Contribute
 
-Created and maintained by **[@KapoorCommits](https://github.com/KapoorCommits)**.
+Created and maintained by **[@KapoorCommits](https://github.com/KapoorCommits)**. Device testing, clear bug reports, accessibility improvements and focused pull requests are welcome. Start with [CONTRIBUTING.md](CONTRIBUTING.md); include your Kindle model, firmware, app version and reproduction steps.
 
-Useful bug reports, careful device testing, accessibility improvements and thoughtful pull requests are welcome. Start with [CONTRIBUTING.md](CONTRIBUTING.md). Include your device model and app version, keep changes focused, and explain how you tested them.
+`@KapoorCommits` owns every path through CODEOWNERS. The protected main branch requires maintainer review and repository checks; [governance](GOVERNANCE.md) describes the policy and the single-maintainer exception.
 
-`@KapoorCommits` is the code owner for the whole project. Incoming PRs require the maintainer’s review under the repository’s protection policy; see [governance](GOVERNANCE.md).
-
-If Yomigami earns a place on your Kindle, a star helps other readers find it.
-
-## License
-
-Yomigami application code is **[AGPL-3.0-or-later](LICENSE)**. Upstream components retain their own licenses and notices. You can inspect, modify and share the code under the applicable license terms.
+**[AGPL-3.0-or-later](LICENSE).** Upstream components retain their own licenses. Read, modify and share Yomigami under the applicable terms.

@@ -51,7 +51,7 @@ function App:pumpDownloads()
     local pending
     if active<3 and not self.state.queue_paused then for _,job in ipairs(self.state.queue) do if job.status=='queued' then pending=job;break end end end
     if pending then
-        local _,free=require('ffi/util').df(self.root)
+        local free=require('disk_space').free(self.root)
         if not free or free<512*1024*1024 then
             self.state.queue_paused=true;self:save();self:message('Downloads paused: less than 512 MB free. Free space, then resume Downloads.')
             pending=nil

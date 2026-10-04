@@ -3,9 +3,10 @@ local json=require('rapidjson')
 local C={}
 function C.encode(s) return tostring(s):gsub('([^%w%-_%.~])',function(c) return string.format('%%%02X',c:byte()) end) end
 function C.request(path, method, body)
+    if path=='@books/probe' then return require('book_transfer').probe(body.root,body.book)end
+    if path=='@books/transfer' then return require('book_transfer').transfer(body.root,body.job)end
     if path=='@books/login' then return require('zlibrary').login(body.root,body.base,body.email,body.password)end
     if path=='@books/search' then return require('book_sources').search(body.source,body.query,body.page or 1,body.root) end
-    if path=='@books/download' then return require('book_sources').download(body.root,body.book) end
     local http=require('socket.http')
     local ltn12=require('ltn12')
     http.TIMEOUT=75

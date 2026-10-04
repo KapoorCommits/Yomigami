@@ -22,6 +22,20 @@ function B.get(url,sink,reset,headers)
 end
 function B.search(source,q,page,root)
     if source=='zlib' then return require('zlibrary').search(root,q,page)end
+    if source=='textbooks' then
+        local data=json.decode(B.get('https://open.umn.edu/opentextbooks/textbooks.json?language=eng&formats%5B%5D=PDF&q='..E(q)..'&page='..page))
+        assert(type(data.data)=='table','Textbook catalog returned an invalid response.')
+        local books={}
+        for _,book in ipairs(data.data)do
+            for _,f in ipairs(book.formats or {})do
+                -- Some PDF entries are publisher landing pages, not files.
+                if f.type=='PDF' and type(f.url)=='string' and f.url:match('^https://') and f.url:lower():match('%.pdf[%?#]?') then
+                    books[#books+1]={id=tostring(book.id),title=book.title,author='Open Textbook Library',url=f.url,format='PDF',source='textbooks'};break
+                end
+            end
+        end
+        return {books=books,more=type(data.links)=='table' and type(data.links.next)=='string'}
+    end
     if source=='gutenberg' then
         local data=json.decode(B.get('https://gutendex.com/books/?languages=en&search='..E(q)..'&page='..page))
         local books={}
@@ -39,6 +53,7 @@ function B.search(source,q,page,root)
     error('This source does not currently expose a verified search integration.')
 end
 function B.resolve(book,root)
+    if book.source=='annas' then return require('annas').resolve(root,book)end
     if book.source=='zlib' then return require('zlibrary').resolve(root,book)end
     if book.url then return book.url end
     local data=json.decode(B.get('https://archive.org/metadata/'..E(book.id)))
@@ -49,28 +64,5 @@ function B.resolve(book,root)
     end
     assert(selected,'No publicly downloadable PDF is available.')
     return 'https://archive.org/download/'..E(book.id)..'/'..E(selected.name)
-end
-function B.download(root,book)
-    local name=(book.title or 'Book'):gsub('[/%c\\:*?"<>|]',' '):sub(1,120)
-    local ext=book.format=='EPUB' and '.epub' or '.pdf';local dest=root..'/library/'..name..ext
-    local lfs=require('libs/libkoreader-lfs');assert(not lfs.attributes(dest),'This book is already in the library.')
-    local _,free=require('ffi/util').df(root);assert(free>256*1024*1024,'Not enough free space.')
-    local part=dest..'.part';local file=assert(io.open(part,'wb'));local bytes=0
-    local ok,err=pcall(function()
-        local url,headers=B.resolve(book,root)
-        B.get(url,function(chunk,error)
-            if error then return nil,error end
-            if chunk then
-                bytes=bytes+#chunk;if bytes>128*1024*1024 then return nil,'Book exceeds 128 MB download limit.'end
-                return file:write(chunk) and 1
-            end
-            return 1
-        end,function()file:close();file=assert(io.open(part,'wb'));bytes=0 end,headers)
-    end)
-    file:close()
-    if not ok then os.remove(part);error(err)end
-    local valid,doc=pcall(require('document').open,part)
-    if not valid then os.remove(part);error('The link did not return a readable book.')end
-    doc:close();assert(os.rename(part,dest));return dest
 end
 return B

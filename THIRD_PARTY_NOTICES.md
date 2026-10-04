@@ -29,3 +29,11 @@ upstream download locations, revisions and build instructions.
 Book providers, Gutendex, Gutenberg and Internet Archive are external services, not
 bundled catalogs or endorsements. No downloaded manga chapters, user libraries or
 commercial ebooks are included in this repository.
+
+October 2026 source work also consulted the current
+[ZlibraryKO API](https://github.com/ZlibraryKO/zlibrary.koplugin/blob/main/zlibrary/api.lua)
+and reviewed [annas-fetch](https://github.com/right9code/annas-fetch.koplugin).
+The Anna adapter uses its [documented member API](https://annas-archive.gl/faq#api),
+not the plugin scraper. Open Textbook Library uses its
+[official API schema](https://open.umn.edu/opentextbooks/api-docs/library.yml).
+Provider APIs and availability are independent of Yomigami.

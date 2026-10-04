@@ -61,9 +61,11 @@ function D:paintTo(bb)
     self:button(bb,'close','×',a.w-s(74),s(26),s(46),s(42),function()self:onClose()end)
     if self.manga then
         a:label(bb,C.sourceId(self.manga),p,s(80),12,false,width)
-        self:button(bb,'all','Download All at once',p,s(116),width,s(48),function()
+        self:button(bb,'all','Download All at once',p,s(116),width-s(120),s(48),function()
             if self.chapters then self:onClose();a:downloadAll(self.manga,self.chapters)end
         end,true)
+        local meta=a.state.series[C.seriesKey(self.manga)] or {}
+        self:button(bb,'follow',meta.followed and 'Following' or 'Follow',a.w-p-s(112),s(116),s(112),s(48),function()a:toggleFollow(self.manga);UI:setDirty(self,'partial')end,meta.followed)
     else
         a:label(bb,'Find your next story across every installed source.',p,s(82),13,false,width)
         bb:paintBorder(p,s(122),width,s(54),s(1),BB.Color8(160),s(27),true)

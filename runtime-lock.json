@@ -1,5 +1,5 @@
 {
-  "app": "0.4.0-alpha",
+  "app": "0.5.0-alpha",
   "target": "kindlehf",
   "firmware_test_target": "5.18.5.0.1",
   "runtime_release": "v2026.07.1",
