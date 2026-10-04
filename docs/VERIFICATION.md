@@ -214,3 +214,12 @@ Actual Kindle cover-cache refresh and appearance remain pending user confirmatio
   not patch native Home, replace the runtime, change sources or publish a release.
 - Deferred: continuous webtoon layout, landscape/two-page spreads, battery-aware
   scheduling, OCR selection, and highlights drawn directly over original pages.
+
+### October 4 reader and publication update
+
+- Twelve isolated reader suites passed, including passcode setup/verification/failure handling and light-grey on-page highlight rendering.
+- Highlight checks covered real local PDF text extraction, preserved black lettering, save/reopen, zoom/pan transforms, EPUB reflow relocation and rejection of ambiguous text anchors. The user's PDF is not included in source or test fixtures; the committed suite defaults to original fixtures, with an optional external sample path.
+- Five installer cases passed: success, bad checksum, syntax failure, app replacement failure and cover replacement failure.
+- Reader/passcode installation logs were read back from the Kindle. The user confirmed the reader functioning; individual passcode behaviors still need physical confirmation.
+- The 586 × 880 caption-free cover, highlight candidate package and user book were transferred with byte-for-byte readback verification. Highlight runtime/touch confirmation remains pending.
+- Home-screen customization and storage cleanup were device maintenance, not public reader features or files. No device state, keys or personal books are part of publication.
