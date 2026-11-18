@@ -24,14 +24,13 @@ function C:onClose()UI:close(self);self.owner:refresh();return true end
 function C:hit(id,x,y,w,h,fn)self.hits[#self.hits+1]={id=id,x=x,y=y,w=w,h=h,fn=fn}end
 function C:button(bb,id,text,x,y,w,h,fn,active)
     local a=self.owner
-    bb:paintRect(x,y,w,h,active and BB.COLOR_BLACK or BB.COLOR_WHITE)
-    if not active then bb:paintBorder(x,y,w,h,a:s(1),BB.Color8(175))end
-    a:centerLabel(bb,text,x,y,w,h,13,true,active);self:hit(id,x,y,w,h,fn)
+    h=math.max(h,a:s(44))
+    require('appearance').button(bb,a,text,x,y,w,h,active);self:hit(id,x,y,w,h,fn)
 end
 function C:paintTo(bb)
     local a=self.owner;local s=function(n)return a:s(n)end;local p=s(28)
     self.hits={};bb:paintRect(0,0,a.w,a.h,BB.COLOR_WHITE)
-    a:label(bb,'YOUR LIBRARY',p,s(34),12,true,a.w-s(120))
+    a:label(bb,'Chapters',p,s(27),28,true,a.w-s(120))
     self:button(bb,'close','×',a.w-s(74),s(24),s(46),s(42),function()self:onClose()end)
     if self.cover then bb:blitFrom(self.cover,p,s(87),0,0,self.cover:getWidth(),self.cover:getHeight())end
     a:label(bb,self.series.title,s(116),s(96),23,true,a.w-s(145))
@@ -43,8 +42,7 @@ function C:paintTo(bb)
         local index=(self.page-1)*self.per+slot;local b=self.series.chapters[index]
         if b then
             local chapter=b;local yy=y+(slot-1)*(rh+gap);local marked=b.path==self.last
-            bb:paintRect(p,yy,width,rh,marked and BB.Color8(236) or BB.Color8(248))
-            bb:paintBorder(p,yy,width,rh,1,BB.Color8(marked and 100 or 218))
+            require('appearance').card(bb,a,p,yy,width,rh,marked)
             local number=type(b.chapter_num)=='number' and b.chapter_num or index
             a:centerLabel(bb,number%1==0 and string.format('%02d',number) or tostring(number),p,yy,s(55),rh,17,true)
             local saved=a.state.progress[b.path]

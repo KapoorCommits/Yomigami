@@ -1,6 +1,27 @@
 # Changelog
 
-## 0.5.0 RC2 — October 2026 reader update (prerelease)
+## 0.5.0 - November 18, 2026
+
+- Refine library, chapter, manga search, book discovery and download screens with shared rounded controls and calm grayscale cards.
+- Add geometric icons, rounded close buttons, larger primary touch targets and clearer download actions.
+- Schedule owned-series checks for Sunday 10 PM and Monday 6 PM India time, with catch-up on reopening. This currently requires Yomigami to be running and does not wake a sleeping Kindle.
+
+- Rank exact manga titles first, add double-tap paragraph highlights, and fix download-screen repainting.
+- Cancel all downloads or clear failed and queued entries without deleting completed books.
+- Reduce download progress writes and reuse a bounded cover cache to keep input responsive.
+- Publish a current first-install ZIP, an update ZIP, and real Kindle screenshots.
+
+### Reader and download fixes
+
+- Add per-book Edge-to-edge fit with tight blank-border removal and selectable-text protection.
+- Recognize diagonal page swipes; preserve the current position when the next render fails.
+- Refresh before durable progress writes; delay background pre-rendering to prioritize input.
+- Reset stale animation flags and animate tall-page scrolling on supported Kindle hardware.
+- Skip highlight lookup when a book has no annotations.
+- Expand the source bundle to 25 adapters. See the source guide for compatibility and availability limits.
+
+
+## 0.5.0 RC2 - October 2026 reader update (prerelease)
 
 - Light-grey on-page highlights in text-based PDFs and EPUBs; persistent notes and Markdown export. Passage context relocates EPUB highlights after reflow and rejects ambiguous matches.
 - Optional 4–8 digit app-start passcode with protected change/disable controls and persisted retry delays.

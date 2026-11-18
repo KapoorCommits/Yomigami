@@ -3,7 +3,8 @@ from pathlib import Path
 import base64, hashlib, json, tarfile, zipfile
 r=Path(__file__).resolve().parents[1]
 manifest=json.loads((r/'assets/sources/manifest.json').read_text())
-assert len(manifest)==20 and len({x['id'] for x in manifest})==20
+count=len(manifest)
+assert count>=20 and len({x['id'] for x in manifest})==count
 fingerprint=hashlib.sha256((r/'assets/sources/manifest.json').read_bytes()).hexdigest()[:12]
 name=f'yomigami-sources-{fingerprint}.tar.gz';archive=r/'dist'/name
 with tarfile.open(archive,'w:gz') as t:
@@ -12,7 +13,7 @@ with tarfile.open(archive,'w:gz') as t:
  t.add(r/'assets/sources/manifest.json',arcname='manifest.json')
 digest=hashlib.sha256(archive.read_bytes()).hexdigest()
 script='''#!/bin/sh
-# Name: Add 20 English Sources
+# Name: Update Manga Sources
 # Author: Yomigami contributors
 # Icon: data:image/png;base64,__ICON__
 # DontUseFBInk
@@ -32,14 +33,22 @@ tar -xzf "$ARCHIVE" -C "$STAGE"
 BACKUP="$ROOT/.sources-backup.__ID__.$$"
 mkdir "$BACKUP"
 mkdir -p "$ROOT/data/sources/sources"
-cp -R "$ROOT/data/sources/sources" "$BACKUP/sources"
-cp "$STAGE/"*.aix "$ROOT/data/sources/sources/"
-cp "$STAGE/manifest.json" "$ROOT/data/sources/sources/manifest.json"
-eips 1 2 "20 English sources added. Open Yomigami."
+cp -R "$ROOT/data/sources/sources" "$STAGE/merged"
+cp "$STAGE/"*.aix "$STAGE/merged/"
+cp "$STAGE/manifest.json" "$STAGE/merged/manifest.json"
+mv "$ROOT/data/sources/sources" "$BACKUP/sources"
+rollback() {
+ if [ ! -d "$ROOT/data/sources/sources" ]; then mv "$BACKUP/sources" "$ROOT/data/sources/sources"; fi
+ rm -rf "$STAGE"
+}
+trap rollback EXIT HUP INT TERM
+mv "$STAGE/merged" "$ROOT/data/sources/sources"
+sync
+eips 1 2 "Manga sources updated. Open Yomigami."
 '''.replace('__ICON__',base64.b64encode((r/'assets/icon.png').read_bytes()).decode()).replace('__ARCHIVE__',name).replace('__SHA__',digest).replace('__ID__',fingerprint)
-launcher=r/'dist/Add 20 English Sources.sh';launcher.write_text(script);launcher.chmod(0o755)
-readme=f'''Yomigami — 20 English manga sources\n\nQuit Yomigami, then connect USB. Copy {name} to Kindle storage root.\nCopy documents/Add 20 English Sources.sh to the Kindle documents folder.\nDisconnect USB and open Add 20 English Sources. Then open Yomigami → Mangas.\n\nExisting books, reading settings and additional sources are kept. Previous adapters\nare backed up inside yomigami/.sources-backup.*. Site availability can change.\nSee SOURCES.md for exact versions and verification limits.\n'''
-with zipfile.ZipFile(r/'dist/Yomigami-20-English-Sources.zip','w',zipfile.ZIP_DEFLATED) as z:
+launcher=r/'dist/Update Manga Sources.sh';launcher.write_text(script);launcher.chmod(0o755)
+readme=f'''Yomigami — English manga sources\n\nQuit Yomigami, then connect USB. Copy {name} to Kindle storage root.\nCopy documents/Update Manga Sources.sh to the Kindle documents folder.\nDisconnect USB and open Update Manga Sources. Then open Yomigami → Mangas.\n\nExisting books, reading settings and additional sources are kept. Previous adapters\nare backed up inside yomigami/.sources-backup.*. Site availability can change.\nSee SOURCES.md for exact versions and verification limits.\n'''
+with zipfile.ZipFile(r/'dist/Yomigami-Manga-Sources-20261011.zip','w',zipfile.ZIP_DEFLATED) as z:
  z.write(archive,name);z.write(launcher,'documents/'+launcher.name);z.writestr('START_HERE.txt',readme)
  z.write(r/'docs/SOURCES.md','SOURCES.md');z.write(r/'THIRD_PARTY_NOTICES.md','THIRD_PARTY_NOTICES.md')
  for p in (r/'licenses').iterdir():

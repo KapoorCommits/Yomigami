@@ -25,8 +25,8 @@ function App:pumpBookDownloads()
         if (j.status=='queued' or j.status=='waiting') and (j.next_try or 0)<=os.time() then
             self.book_worker=j;j.status='active';j.attempts=(j.attempts or 0)+1;self:save()
             j.pid=R:send(self.root,'@books/transfer','POST',{root=self.root,job=j},function(ok,result)
-                self.book_worker=nil;j.pid=nil
-                if self.book_download_stopped then return end
+                if self.book_worker==j then self.book_worker=nil end;j.pid=nil
+                if self.book_download_stopped or j.status~='active' then return end
                 if ok then j.status='complete';j.path=result.path;j.total=result.total;j.error=nil;self:scan()
                 else j.error=tostring(result):gsub('^.-:%d+: ','');local retry=j.error:find('Connection') or j.error:find('Transfer interrupted') or j.error:find('HTTP 5') or j.error:find('rate limit') or j.error:find('timed out');j.status=retry and j.attempts<6 and 'waiting' or 'failed';j.next_try=os.time()+math.min(300,15*2^(j.attempts-1))end
                 self:save()
@@ -41,5 +41,5 @@ function App:pauseBookDownload(j,cancel)
     if cancel then local part,meta=T.paths(self.root,j.id);os.remove(part);os.remove(meta)end
     self:save()
 end
-function App:bookDownloadsMenu()UI:show(require('transfer_list'):new{owner=self})end
+function App:bookDownloadsMenu()UI:show(require('transfer_list'):new{owner=self},'full')end
 end

@@ -10,12 +10,13 @@ function App:startDownloads()
     for _,job in ipairs(self.state.queue) do if job.status=='active' then job.status='queued';job.id=nil end end
     self.download_tick=function()
         if self.download_stopped then return end
-        self:pumpDownloads();UI:scheduleIn(.2,self.download_tick)
+        self:pumpDownloads();UI:scheduleIn(.5,self.download_tick)
     end
-    if not os.getenv('YOMIGAMI_TEST') then UI:scheduleIn(.2,self.download_tick) end
+    if not os.getenv('YOMIGAMI_TEST') then UI:scheduleIn(.5,self.download_tick) end
 end
 function App:stopDownloads()
     self.download_stopped=true
+    if self.series_auto_tick then UI:unschedule(self.series_auto_tick)end
     if self.download_tick then UI:unschedule(self.download_tick) end
     self:save()
 end
@@ -75,7 +76,7 @@ function App:pumpDownloads()
         elseif result.type=='COMPLETED' then
             local data=result.data;local file=type(data)=='table' and data[1];local errors=type(data)=='table' and data[2]
             if type(file)~='string' or type(errors)=='table' and #errors>0 then job.status='failed';job.error='Some pages did not download. Retry this chapter.'
-                if type(file)=='string' then self.state.incomplete[file]=true end
+                if type(file)=='string' then self.state.incomplete[file]=true;job.partial_path=file end
             else
                 job.status='complete';job.path=file;self.state.incomplete[file]=nil
                 self.state.downloads[file]={title=job.chapter.title or job.chapter.id,series_key=C.seriesKey(job.manga),chapter_num=job.chapter.chapter_number or job.chapter.chapter_num,chapter_id=job.chapter.id}
@@ -83,7 +84,9 @@ function App:pumpDownloads()
             end
         elseif result.type=='ERROR' then job.status='failed';job.error=require('rapidjson').encode(result.data)
         else job.progress=result end
-        self:save()
+        -- Percentage updates are transient; persisting the whole library here
+        -- blocked touch input on every poll. State transitions remain durable.
+        if pending or not ok or job.status=='complete' or job.status=='failed' then self:save() end
         if pending or result and result.type=='COMPLETED' then UI:scheduleIn(.01,function()if not self.download_stopped then self:pumpDownloads()end end)end
     end)
 end
@@ -97,6 +100,8 @@ function App:manageDownloads()
     local items={
         {text=counts.queued..' waiting / '..counts.active..' downloading / '..counts.complete..' complete'},
         {text=self.state.queue_paused and 'Resume queue' or 'Pause new downloads',callback=function()self.state.queue_paused=not self.state.queue_paused;self:save()end},
+        {text='Cancel all downloads',callback=function()self:confirmBulkDownloads('manga',false)end},
+        {text='Clear failed & queued',callback=function()self:confirmBulkDownloads('manga',true)end},
         {text='Refresh',callback=function()self:manageDownloads()end},
         {text='Retry failed chapters ('..counts.failed..')',callback=function()for _,j in ipairs(self.state.queue) do if j.status=='failed' then j.status='queued';j.id=nil;j.error=nil end end;self:save()end},
     }
@@ -108,6 +113,6 @@ function App:manageDownloads()
     end
     self:menu('Downloads',items)
 end
-function App:downloadsMenu(key,title) UI:show(require('download_progress'):new{owner=self,series_key=key,title=title}) end
+function App:downloadsMenu(key,title) require('device').screen:setSwipeAnimations(false);UI:show(require('download_progress'):new{owner=self,series_key=key,title=title},'full') end
 function App:pollDownloads() self:pumpDownloads();self:downloadsMenu() end
 end

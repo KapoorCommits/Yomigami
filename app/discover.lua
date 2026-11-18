@@ -28,7 +28,7 @@ end
 function D:search()
     self.query=(self.query or ''):match('^%s*(.-)%s*$');if self.query=='' then return end
     self:fetch('/mangas?q='..C.encode(self.query)..'&page='..self.remote_page..'&cancel_id=3030',nil,nil,function(data)
-        self.results=data[1] or {};self.errors=data[2] or {};self.has_more=data[3];self.page=1
+        self.results=require('search_rank').rank(data[1] or {},self.query);self.errors=data[2] or {};self.has_more=data[3];self.page=1
     end)
 end
 function D:loadChapters()
@@ -38,6 +38,7 @@ function D:loadChapters()
         self:fetch(path..'/refresh-chapters','POST',1,function()
             self:fetch(path..'/chapters',nil,nil,function(data)
                 self.chapters=data
+                self.owner:applySeriesChapters(self.manga,data)
                 table.sort(data,function(a,b)
                     local an=a.chapter_number or a.chapter_num;local bn=b.chapter_number or b.chapter_num
                     if type(an)=='number' and type(bn)=='number' and an~=bn then return an<bn end
@@ -69,10 +70,12 @@ function D:paintTo(bb)
     else
         a:label(bb,'Find your next story across every installed source.',p,s(82),13,false,width)
         bb:paintBorder(p,s(122),width,s(54),s(1),BB.Color8(160),s(27),true)
-        bb:paintCircle(p+s(25),s(149),s(7),BB.COLOR_BLACK,s(1))
-        for i=0,s(6) do bb:paintRect(p+s(30)+i,s(154)+i,s(1),s(1),BB.COLOR_BLACK) end
+        require('appearance').icon(bb,'search',p+s(26),s(149),s(24),BB.COLOR_BLACK,s(1.5))
         a:centerLabel(bb,self.query or 'Search manga you want to read',p+s(45),s(122),width-s(106),s(54),14,false)
-        if self.query then self:button(bb,'clear','×',a.w-p-s(48),s(127),s(40),s(44),function()self.query=nil;self.results=nil;self.errors=nil;self.error=nil;self.has_more=false;self.page=1;self.request_generation=(self.request_generation or 0)+1;self.loading=false;UI:setDirty(self,'full')end) end
+        if self.query then
+            local cx=a.w-p-s(29);local cy=s(149)
+            require('appearance').icon(bb,'close',cx,cy,s(20),BB.COLOR_BLACK,s(1.5))
+            self:hit('clear',a.w-p-s(51),s(127),s(44),s(44),function()self.query=nil;self.results=nil;self.errors=nil;self.error=nil;self.has_more=false;self.page=1;self.remote_page=1;self.request_generation=(self.request_generation or 0)+1;self.loading=false;UI:setDirty(self,'full')end) end
         self:hit('search',p,s(122),width-s(55),s(54),function()
             a:input('Search manga you want to read',function(q)if not self.closed then self.query=q;self.remote_page=1;self:search()end end)
         end)
@@ -84,7 +87,7 @@ function D:paintTo(bb)
         local index=(self.page-1)*self.per+slot;local entry=entries[index]
         if entry then
             local y=s(229)+(slot-1)*s(76);local h=s(66)
-            bb:paintRect(p,y,width,h,BB.Color8(247));bb:paintBorder(p,y,width,h,1,BB.Color8(210))
+            require('appearance').card(bb,a,p,y,width,h,false)
             local offline=self.manga and self:findOffline(entry)
             local saved=offline and a.state.progress[offline.path]
             a:centerLabel(bb,entry.title or entry.id,p+s(20),y+s(5),width-s(40),s(30),16,true)

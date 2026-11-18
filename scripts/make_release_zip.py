@@ -3,32 +3,25 @@ from pathlib import Path
 import hashlib, zipfile
 ROOT=Path(__file__).resolve().parents[1]
 OUT=ROOT/'dist/Yomigami-0.5.0-Paperwhite12-Install.zip'
-readme="""YOMIGAMI 0.5.0 ALPHA — KINDLE PAPERWHITE 12
+readme="""YOMIGAMI 0.5.0 - FIRST INSTALL
 
-Target: an already jailbroken Paperwhite 12th generation, firmware 5.18.5.0.1,
-with a working scriptlet/book launcher. Other firmware, including nearby versions,
-is unverified. This package does not jailbreak a Kindle.
+For a jailbroken Kindle Paperwhite 12, firmware 5.18.5.0.1, with a working
+scriptlet book launcher. Other devices and firmware are unverified.
 
-FIRST INSTALL — NO BUILD TOOLS NEEDED
 1. Extract this ZIP on your computer.
-2. Copy yomigami-0.5.0.tar.gz to the Kindle storage root. Do not unpack that tar.gz.
-3. Copy documents/Yomigami.sh into the Kindle's documents folder.
-4. Disconnect USB and open the Yomigami book on the Kindle.
-5. First launch verifies the payload, installs the app and opens it.
+2. Copy yomigami-0.5.0.tar.gz to the top level of Kindle storage. Do not unpack it.
+3. Copy documents/Yomigami.sh into the Kindle documents folder.
+4. Eject and unplug USB. Open Yomigami in the Kindle library.
 
-The installer refuses to overwrite an existing Yomigami installation. It keeps
-KOReader and Rakuyomi separate. Back up your Yomigami data before any future update.
+The installer verifies its payload before installing. It refuses to overwrite
+an existing incomplete installation. For an existing working Yomigami, use the
+Update ZIP instead. Back up yomigami/data before updates.
 
-This is an alpha: core reading/page turns have been exercised on the target Kindle;
-newer PDF/EPUB discovery and display changes still need physical confirmation.
-After installing, try Reader Test, Library/Quit, sleep/wake, and page resume.
+This package does not jailbreak your Kindle or change Kindle Home. It contains
+original sample books only. It uses its own KOReader runtime and Rakuyomi engine.
 
-Code, help, updates and source companion:
-https://github.com/KapoorCommits/Yomigami/releases/tag/v0.5.0-alpha
-
-Credits: KOReader for the private device/native runtime; Rakuyomi for the manga
-engine; Aidoku Community, MuPDF, ZlibraryKO and their upstream contributors.
-See THIRD_PARTY_NOTICES.md and the bundled notices. No commercial books are included.
+Help and source files: https://github.com/KapoorCommits/Yomigami/releases/tag/v0.5.0
+Credits and licenses: see THIRD_PARTY_NOTICES.md and the licenses folder.
 """
 with zipfile.ZipFile(OUT,'w',zipfile.ZIP_DEFLATED) as z:
  z.write(ROOT/'dist/yomigami-0.5.0.tar.gz','yomigami-0.5.0.tar.gz')

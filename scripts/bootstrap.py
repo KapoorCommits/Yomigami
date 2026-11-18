@@ -3,15 +3,16 @@ from pathlib import Path
 import argparse, hashlib, json, os, shutil, stat, subprocess, sys, urllib.request, zipfile
 ROOT = Path(__file__).resolve().parents[1]
 LOCK = json.loads((ROOT / 'runtime-lock.json').read_text())
+ENGINE_VERSION = LOCK['source_engine_release']
 p = argparse.ArgumentParser(description=__doc__)
 p.add_argument('--macos-engine', action='store_true', help='Also fetch the optional macOS source engine')
 a = p.parse_args()
 inputs = [
  ('koreader-kindlehf-v2026.07.1.zip', 'https://github.com/koreader/koreader/releases/download/v2026.07.1/koreader-kindlehf-v2026.07.1.zip', 'build/kindle', 'koreader'),
- ('rakuyomi-kindlehf-v1.41.6.zip', 'https://github.com/tachibana-shin/rakuyomi/releases/download/v1.41.6/rakuyomi-kindlehf.zip', 'build/source-kindle', 'rakuyomi.koplugin'),
+ (f'rakuyomi-kindlehf-{ENGINE_VERSION}.zip', f'https://github.com/tachibana-shin/rakuyomi/releases/download/{ENGINE_VERSION}/rakuyomi-kindlehf.zip', f'build/source-kindle-{ENGINE_VERSION}', 'rakuyomi.koplugin'),
 ]
 if a.macos_engine:
- inputs.append(('rakuyomi-macos-v1.41.6.zip', 'https://github.com/tachibana-shin/rakuyomi/releases/download/v1.41.6/rakuyomi-macos.zip', 'build/source-macos', 'rakuyomi.koplugin'))
+ inputs.append((f'rakuyomi-macos-{ENGINE_VERSION}.zip', f'https://github.com/tachibana-shin/rakuyomi/releases/download/{ENGINE_VERSION}/rakuyomi-macos.zip', f'build/source-macos-{ENGINE_VERSION}', 'rakuyomi.koplugin'))
 (ROOT / 'downloads').mkdir(exist_ok=True)
 for name, url, folder, sentinel in inputs:
  archive = ROOT / 'downloads' / name

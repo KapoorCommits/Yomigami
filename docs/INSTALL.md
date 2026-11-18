@@ -1,88 +1,43 @@
-# Install Yomigami
+# Install or update Yomigami
 
-**Target:** jailbroken Kindle Paperwhite 12th generation, firmware 5.18.5.0.1,
-with a working scriptlet launcher. Other models are unverified. This is alpha software.
-Yomigami does not install a jailbreak. Nearby firmware versions are unverified.
-Download the **[Paperwhite 12 installer ZIP](https://github.com/KapoorCommits/Yomigami/releases/download/v0.4.0-alpha/Yomigami-0.4.0-Paperwhite12-Install.zip)**; no build tools are required.
+Tested on a jailbroken Kindle Paperwhite 12th generation running firmware 5.18.5.0.1, with a working scriptlet book launcher. Other models and firmware versions are unverified. These files do not install a jailbreak.
+
+Get the ZIP from the [latest release](https://github.com/KapoorCommits/Yomigami/releases/latest). Do not use GitHub's automatic Source code ZIP to install the app.
 
 ## First installation
 
-1. Download and extract the installer ZIP on your computer (or [build it locally](BUILDING.md)).
-2. Copy `yomigami-0.4.0.tar.gz` to the Kindle storage root.
-3. Copy `documents/Yomigami.sh` into the Kindle’s `documents` folder.
-4. Disconnect USB and open the new **Yomigami** book.
-5. The installer checks the archive checksum and installs into `/mnt/us/yomigami`.
-   It refuses to overwrite an existing or incomplete installation.
-6. Try **Reader Test**, the original 12-page test book, and the Welcome PDF.
+1. Download `Yomigami-0.5.0-Paperwhite12-Install.zip` and extract it on your computer.
+2. Connect the Kindle by USB.
+3. Copy `yomigami-0.5.0.tar.gz` to the top level of Kindle storage. Leave this archive packed.
+4. Copy `documents/Yomigami.sh` into the Kindle's `documents` folder.
+5. Eject the Kindle, unplug USB, and open **Yomigami** in the Kindle library.
 
-The same launcher opens the installed app on subsequent runs. Your separately installed
-KOReader and Rakuyomi are not altered. No commercial books are included.
+The launcher checks the archive, installs the app and opens it. It refuses to overwrite an existing incomplete installation. Reader Test and Welcome PDF are small original samples; no commercial books are bundled.
 
 ## Update an existing installation
 
-Back up `/mnt/us/yomigami/data`, then quit Yomigami before connecting USB.
-Copy `dist/yomigami-update-0.4.0.tar.gz` to the storage root and
-`dist/Update Yomigami 0.4.0.sh` into `documents`. Disconnect, then open the update book.
-It checks its payload and retains a backup of the prior app, settings and bookmarks.
-This updater applies 0.4.0 to earlier versions; it does not reinstall an already marked 0.4.0.
+1. Quit Yomigami and connect USB.
+2. Back up the entire `yomigami/data` folder to your computer. It contains your books, progress, settings and notes.
+3. Extract `Yomigami-0.5.0-Paperwhite12-Update.zip`.
+4. Copy all extracted folders and the source archive to the top level of Kindle storage. Merge the `documents` folder with the existing one.
+5. Eject, unplug USB, then open **Update Yomigami**.
+6. When Yomigami opens, check your library and resume a book. You can then remove the temporary update book and update files listed in `START_HERE.txt`.
 
-## Latest source candidate
+The update installs the reader, manga engine and bundled source adapters. It keeps your books, notes, preferences and the current Kindle Home layout. Component backups remain inside the Yomigami folder. Each component is verified before replacement; if an update reports an error, keep the files and logs for diagnosis.
 
-The instructions above install the published 0.4.0 binary. For newer features, see the [October update](OCTOBER_UPDATE.md) and [reader guide](READER_GUIDE.md). The sections below describe the older release unless explicitly marked otherwise.
+## Add your own books
 
-## Read your books
+Copy PDF, EPUB or CBZ files into `yomigami/data/library`, then use **+ → Rescan**. For wireless transfer, open **PDFs → Import PDF From Anywhere** and follow the local Wi-Fi instructions. Your phone or computer must be on the same network. EPUB and CBZ uploads are supported too; this is a browser upload, not AirDrop.
 
-Copy PDF, EPUB or CBZ files into `/mnt/us/yomigami/data/library`, then choose **+ → Rescan**.
-The import control copies a file already on Kindle without replacing its original.
-Covers use the book’s first page. Hold a cover to rename its display title or move it to
-Recently deleted; restore or permanently delete from that menu.
+## If something goes wrong
 
-Tap a book or chapter to read. Edge taps turn pages; the center hides or restores the
-reading toolbar. **Library** saves your place and returns to the shelf; **Quit ×** exits
-to Kindle. The title opens the chapter menu. Chapter boundaries require an explicit choice.
+Do not factory-reset the Kindle or delete your data folder. Keep these logs if present:
 
-Options includes brightness, warmth, contrast, reading direction, page fit, zoom,
-light/dark mode, pre-rendering and auto-crop. Pinch to zoom where the device supports it.
-Auto-crop fills width, so tall content pans before the next page. Originals are unchanged.
-EPUB uses a fixed reflow layout; font customization and DRM support are not implemented.
+- `yomigami-install.log` for first installation.
+- `yomigami-update.log` for reader updates.
+- `yomigami/runtime/crash.log` for reader errors.
+- `yomigami/data/source.log` for manga source errors.
 
-## Find manga
+Remove personal details before sharing logs in an issue. Include your model, firmware and the steps that failed.
 
-Open **Mangas**, enter a title and search installed sources. Eleven English-capable
-adapters are bundled, including Weeb Central and MangaDex. Each result names its source.
-Select a manga, inspect its chapters, then choose **Download All at once** or an individual
-chapter. The × search control clears the query and results.
-
-The progress screen can stay open or run in the background while you read. Up to three
-chapters are active, with eight page requests per chapter. The queue persists across
-restarts; transfers stop when Yomigami exits. New scheduling pauses below 512 MB free.
-Providers may be unavailable or rate limited; the app cannot guarantee download speed.
-
-## Find PDFs and EPUBs
-
-Open **PDFs** in the library. Gutenberg searches classics through Gutendex. Internet Archive
-searches publicly downloadable PDFs. Direct HTTPS book links are also supported.
-
-For Z-Library, choose **Sign in / change server**, then enter your current HTTPS server,
-email and password on the Kindle. Choose **Search PDF & EPUB** afterward. Only session tokens
-are saved, without encryption on Kindle storage; sign out removes them. Authenticated
-search/download remains unverified in this alpha. PDFDrive integration is unavailable.
-
-Book downloads run in background workers while the app is open, with a 128 MB file limit
-and a 20-minute ceiling. Quitting cancels active PDF/EPUB transfers. Local reading is offline;
-remote discovery and downloads require Wi-Fi.
-
-## Recovery and removal
-
-- Books, preferences and progress: `/mnt/us/yomigami/data/`.
-- Reader diagnostics: `/mnt/us/yomigami/runtime/crash.log`.
-- Source diagnostics: `/mnt/us/yomigami/data/source.log`.
-- Installer diagnostics: `/mnt/us/yomigami-install.log`.
-
-To remove Yomigami, quit it, back up `data`, and remove its own application folder and
-launcher. Do not remove the separately installed KOReader directory. Redact personal
-information and session data before sharing diagnostics.
-
-After an update, check chapter/page resume, Library and Quit, power-button sleep/wake,
-lighting, dark mode, auto-crop and source downloads on the physical Kindle. Emulator
-success alone does not establish those hardware behaviors.
+To remove the app, quit it, back up `yomigami/data`, then remove the `yomigami` folder and `documents/Yomigami.sh`.

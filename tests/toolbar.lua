@@ -13,5 +13,6 @@ app:turn(1);assert(app.nav.page==2 and app.book.path==book.path);paint('toolbar-
 tap(300,200);assert(not app.chrome_hidden);paint('toolbar-restored')
 tap(30,20);assert(app.screen_name=='library' and not app.doc)
 app:openBook(book);assert(app.nav.page==2);paint('toolbar-resume')
+local dropdown=false;app.chapterDropdown=function() dropdown=true end;tap(200,20);assert(dropdown,'Padded chapter dropdown must remain tappable')
 local called=false;app.quit=function() called=true end;tap(550,20);assert(called)
 print('PASS toolbar hide/show, fullscreen turn, Library, saved resume and Quit')

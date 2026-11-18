@@ -3,14 +3,14 @@ local UI=require('ui/uimanager')
 local BB=require('ffi/blitbuffer')
 local Gesture=require('ui/gesturerange')
 local C=require('catalog')
-local P=require('chapters'):extend{}
+local P=require('chapters'):extend{covers_fullscreen=true}
 function P:init()
     self.dimen=self.owner.dimen;self.hits={}
     self.ges_events={Tap={Gesture:new{ges='tap',range=self.dimen}}};self.key_events={Close={{'Back'},{'Esc'}}}
     self.tick=function()
         if self.closed then return end
         local c=self:stats();local key=table.concat({math.floor(c.ratio*100),c.total,c.complete,c.active,c.failed,tostring(self.owner.state.queue_paused)},':')
-        if key~=self.last_stats then
+        if key~=self.last_stats and UI:getTopmostVisibleWidget()==self then
             self.last_stats=key
             UI:setDirty(self,'fast',require('ui/geometry'):new{x=0,y=self.owner:s(250),w=self.owner.w,h=self.owner:s(260)})
         end
@@ -38,13 +38,17 @@ function P:paintTo(bb)
     local a=self.owner;local s=function(n)return a:s(n)end;local p=s(28);local width=a.w-p*2;local c=self:stats()
     self.hits={};bb:paintRect(0,0,a.w,a.h,BB.COLOR_WHITE)
     a:label(bb,'Your downloads',p,s(34),28,true,width)
-    a:centerLabel(bb,self.title or 'Building your offline library',p,s(155),width,s(65),22,true)
+    require('appearance').icon(bb,'download',a.w/2,s(125),s(46),BB.COLOR_BLACK,s(2))
+    a:centerLabel(bb,self.title or 'Your offline library',p,s(170),width,s(58),22,true)
     a:centerLabel(bb,math.floor(c.ratio*100)..'%',p,s(256),width,s(90),54,true)
-    bb:paintRect(p,s(367),width,s(13),BB.Color8(223));bb:paintRect(p,s(367),math.floor(width*c.ratio),s(13),BB.COLOR_BLACK)
+    bb:paintRoundedRect(p,s(367),width,s(10),BB.Color8(225),s(5));if c.ratio>0 then bb:paintRoundedRect(p,s(367),math.max(s(10),math.floor(width*c.ratio)),s(10),BB.COLOR_BLACK,s(5))end
     a:centerLabel(bb,c.complete..' of '..c.total..' chapters ready',p,s(408),width,s(35),17,true)
     a:centerLabel(bb,c.failed>0 and (c.failed..' need retry') or c.total>0 and c.complete==c.total and 'Your library is ready.' or a.state.queue_paused and 'Paused' or c.total==0 and 'No downloads in the queue.' or (c.active..' downloading · You can keep reading'),p,s(455),width,s(32),13,false)
-    self:button(bb,'background',c.total>0 and c.complete==c.total and 'Done' or 'Run in background',p,s(538),width,s(48),function()self:onClose()end,true)
-    self:button(bb,'pause',a.state.queue_paused and 'Resume downloads' or 'Pause new downloads',p,s(605),width,s(44),function()a.state.queue_paused=not a.state.queue_paused;a:save();UI:setDirty(self,'partial')end)
-    self:button(bb,'details','Manage queue / Retry / Cancel',p,s(667),width,s(44),function()self:onClose();a:manageDownloads()end)
+    self:button(bb,'background',c.total>0 and c.complete==c.total and 'Done' or 'Continue reading',p,s(538),width,s(48),function()self:onClose()end,true)
+    local half=(width-s(12))/2
+    self:button(bb,'cancel-all','Cancel all',p+half+s(12),s(605),half,s(44),function()a:confirmBulkDownloads('manga',false,function()UI:setDirty(self,'full')end)end)
+    self:button(bb,'clear-failed','Clear failed & queued',p,s(729),width,s(40),function()a:confirmBulkDownloads('manga',true,function()UI:setDirty(self,'full')end)end)
+    self:button(bb,'pause',a.state.queue_paused and 'Resume downloads' or 'Pause queue',p,s(605),half,s(44),function()a.state.queue_paused=not a.state.queue_paused;a:save();UI:setDirty(self,'partial')end)
+    self:button(bb,'details','Manage downloads',p,s(667),width,s(44),function()self:onClose();a:manageDownloads()end)
 end
 return P

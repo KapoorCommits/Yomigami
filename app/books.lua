@@ -94,7 +94,7 @@ function B:paintTo(bb)
             {'annas','Anna’s Archive','Browser search & import · Member downloads',function()self:annas()end},
         }
         for i,row in ipairs(rows)do local y=s(130)+(i-1)*s(88)
-            bb:paintRect(p,y,w,s(76),BB.Color8(247));bb:paintBorder(p,y,w,s(76),1,BB.Color8(210))
+            require('appearance').card(bb,a,p,y,w,s(76),i==1)
             a:centerLabel(bb,row[2],p,y+s(9),w,s(30),17,true);a:centerLabel(bb,row[3],p,y+s(42),w,s(25),12,false)
             self:hit(row[1],p,y,w,s(76),row[4])
         end
@@ -107,7 +107,7 @@ function B:paintTo(bb)
     local items=self.error and {} or self.results or {}
     for slot=1,self.per do local index=(self.page-1)*self.per+slot;local book=items[index]
         if book then local y=s(230)+(slot-1)*s(76)
-            bb:paintRect(p,y,w,s(66),BB.Color8(247));a:centerLabel(bb,book.title,p,y+s(5),w,s(30),16,true)
+            require('appearance').card(bb,a,p,y,w,s(66),false);a:centerLabel(bb,book.title,p,y+s(5),w,s(30),16,true)
             a:centerLabel(bb,book.format..' · '..(book.author or 'Internet Archive'),p,y+s(36),w,s(24),11,false)
             self:hit('book-'..index,p,y,w,s(66),function()self:download(book)end)
         end

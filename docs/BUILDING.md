@@ -12,14 +12,18 @@ cd Yomigami
 python3 scripts/bootstrap.py
 python3 scripts/package.py
 python3 scripts/make_installer.py
-python3 scripts/make_update.py
+python3 scripts/make_release_zip.py
+python3 scripts/make_reader_update.py --date 20261118 --revision release
+python3 scripts/make_engine_update.py
+python3 scripts/make_source_pack.py
+python3 scripts/make_release_update.py
 ```
 
 `bootstrap.py` downloads the exact inputs in `runtime-lock.json`, verifies SHA-256,
 preserves existing extracted runtimes, and generates original sample books in an
 isolated packaging-fixture directory. No personal library or source database is needed.
 
-Install using `dist/yomigami-0.4.0.tar.gz` and `dist/installer/Yomigami.sh`. See the
+Install using `dist/yomigami-0.5.0.tar.gz` and `dist/installer/Yomigami.sh`. See the
 [installation guide](INSTALL.md). The updater is for an existing Yomigami installation.
 Generated output is excluded from Git. Always test updates on hardware before sharing them.
 
