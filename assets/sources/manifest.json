@@ -285,5 +285,84 @@
     "source_of_source": "aidoku-community.github.io",
     "sha256": "47502d2c7a4f04f7543c4fc01e8d76a8ace58cf9288a12c2c91da072f0565d1c",
     "download_url": "https://aidoku-community.github.io/sources/sources/multi.mangaplus-v6.aix"
+  },
+  {
+    "id": "en.comix",
+    "name": "Comix",
+    "version": 26,
+    "languages": [
+      "en"
+    ],
+    "source_of_source": "aidoku-community.github.io",
+    "sha256": "4d64757697da8372060505d6840c0f3754aaea763d61075075eebed78ee5c627",
+    "download_url": "https://aidoku-community.github.io/sources/sources/en.comix-v26.aix"
+  },
+  {
+    "id": "multi.mangadotnet",
+    "name": "Mangadotnet",
+    "version": 7,
+    "languages": [
+      "ar",
+      "cs",
+      "de",
+      "el",
+      "en",
+      "es",
+      "es-la",
+      "fr",
+      "hi",
+      "id",
+      "it",
+      "ja",
+      "ko",
+      "ms",
+      "nl",
+      "pl",
+      "pt",
+      "pt-br",
+      "ru",
+      "sv",
+      "th",
+      "tl",
+      "tr",
+      "vi",
+      "zh-hk"
+    ],
+    "source_of_source": "aidoku-community.github.io",
+    "sha256": "89d3f1845acd83ed987e06044e348bf4b442e43bd3c56296c73ba89216816813",
+    "download_url": "https://aidoku-community.github.io/sources/sources/multi.mangadotnet-v7.aix"
+  },
+  {
+    "id": "en.mangakatana",
+    "name": "MangaKatana",
+    "version": 3,
+    "languages": [
+      "en"
+    ],
+    "source_of_source": "tachibana-shin/aidoku-community-sources",
+    "sha256": "f99756106367ec0021a271bbe55c36d9312eba9eceba16bc46cef0a3167815b3",
+    "download_url": "https://raw.githubusercontent.com/tachibana-shin/aidoku-community-sources/gh-pages/sources/en.mangakatana-v3.aix"
+  },
+  {
+    "id": "en.mangapill",
+    "name": "MangaPill",
+    "version": 2,
+    "languages": [
+      "en"
+    ],
+    "source_of_source": "tachibana-shin/aidoku-community-sources",
+    "sha256": "e49fdfb1a7074007e7dd2f30d838ab325ff5ac91eaa6ef24eeaca3f761c0be8a",
+    "download_url": "https://raw.githubusercontent.com/tachibana-shin/aidoku-community-sources/gh-pages/sources/en.mangapill-v2.aix"
+  },
+  {
+    "id": "multi.batoto",
+    "name": "Bato.to",
+    "version": 5,
+    "languages": [
+      "en"
+    ],
+    "source_of_source": "tachibana-shin/aidoku-community-sources",
+    "sha256": "6f36788899d4b326d2092b17e90f6a22269cdcf35121207eb1569234957a5e19",
+    "download_url": "https://raw.githubusercontent.com/tachibana-shin/aidoku-community-sources/gh-pages/sources/multi.batoto-v5.aix"
   }
 ]

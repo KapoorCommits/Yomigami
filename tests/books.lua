@@ -36,7 +36,7 @@ local cleared=false;for _,h in ipairs(d.hits)do if h.id=='clear-search' or h.id=
 assert(cleared,'clear hit missing');callback(true,{mangas={{title='stale'}},errors={}});assert(not d.results or #d.results==0)
 R.send=send
 local H=require('book_http');assert(H.matches('a.example.org','*.example.org'));assert(not H.matches('a.b.example.org','*.example.org'));assert(not H.matches('badexample.org','*.example.org'))
-local P=require('download_progress'):new{owner=app};local dirty=UI.setDirty;local updates=0
+local P=require('download_progress'):new{owner=app};UI:show(P,'full');local dirty=UI.setDirty;local updates=0
 UI.setDirty=function(_,widget,mode,region)assert(mode=='fast' and region);updates=updates+1 end
-P.tick();P.tick();assert(updates==1,'Idle progress must not refresh');P:onCloseWidget();UI.setDirty=dirty
+P.tick();P.tick();assert(updates==1,'Idle progress must not refresh');P:onCloseWidget();UI.setDirty=dirty;UI:close(P)
 print('PASS book screen, redirect body reset, cookie scoping, Z-Library session and cleared stale results')

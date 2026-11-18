@@ -1,6 +1,24 @@
 -- SPDX-License-Identifier: AGPL-3.0-or-later
 return function(App)
-function App:onDoubleTap()if self.doc then self:toggleChrome()end;return true end
+function App:onDoubleTap(_,g)
+    if not self.doc then return true end
+    if not g or not g.pos then self:toggleChrome();return true end
+    if self.book.format=='CBZ' then self:toggleChrome();return true end
+    local image,t=self.page_image,self.page_transform;if not image or not t then return true end
+    local ox=math.floor((self.w-image:getWidth())/2)
+    local oy=(self.chrome_hidden and 0 or self:s(47))+math.floor((self:readerHeight()-image:getHeight())/2)
+    if g.pos.x<ox or g.pos.x>=ox+image:getWidth() or g.pos.y<oy or g.pos.y>=oy+image:getHeight()then return true end
+    local ok,map=pcall(self.doc.textMap,self.doc,self.nav.page)
+    if not ok or #map.words==0 then self:message('This page has no selectable text. Hold the page to add a note.');return true end
+    local quote,first,last=require('paragraph').at(map,(g.pos.x-ox+t.x)/t.zoom,(g.pos.y-oy+t.y)/t.zoom)
+    if not quote then return true end
+    local captured,anchor=pcall(require('highlight_anchor').capture,self.doc,self.nav.page,quote,first,last)
+    if not captured or not anchor then self:message('Could not locate this paragraph. Use Select text for a precise highlight.');return true end
+    for _,e in ipairs((self.state.annotations or {})[self.book.path] or {})do
+        if e.anchor and e.anchor.first==anchor.first and e.anchor.last==anchor.last and e.anchor.text==anchor.text and e.anchor.page==anchor.page then return true end
+    end
+    self:addAnnotation(quote,'',anchor);return true
+end
 function App:ensureTextLayout()
     if not self.doc or not self.doc.reflowable then return end
     local width,height,font=self.w,self:readerHeight(),self:s(self.state.font_size or 24)

@@ -1,6 +1,51 @@
 -- SPDX-License-Identifier: AGPL-3.0-or-later
 local C=require('catalog');local R=require('requests');local UI=require('ui/uimanager')
 return function(App)
+function App:ownsSeries(key)
+    for file,info in pairs(self.state.downloads)do
+        if info.series_key==key and require('libs/libkoreader-lfs').attributes(file)then return true end
+    end
+    return false
+end
+function App:applySeriesChapters(manga,chapters)
+    local key=C.seriesKey(manga);local meta=self.state.series[key]
+    if not meta or not self:ownsSeries(key)then return 0 end
+    local seen=meta.seen_chapters;local newest
+    for _,info in pairs(self.state.downloads)do
+        if info.series_key==key and type(info.chapter_num)=='number' then newest=math.max(newest or info.chapter_num,info.chapter_num)end
+    end
+    local fresh={};local next_seen={}
+    for _,chapter in ipairs(chapters)do if chapter.id then
+        local id=tostring(chapter.id);next_seen[id]=true
+        local number=chapter.chapter_number or chapter.chapter_num
+        if (seen and not seen[id]) or (not seen and newest and type(number)=='number' and number>newest)then fresh[#fresh+1]=chapter end
+    end end
+    -- Keep past IDs if a provider temporarily returns an incomplete list.
+    for id in pairs(seen or {})do next_seen[id]=true end
+    meta.seen_chapters=next_seen;meta.manga=manga;meta.checked=os.time()
+    local n=0;if meta.auto_updates~=false and #fresh>0 then n=self:enqueueChapters(manga,fresh)end
+    self:save();return n
+end
+function App:startSeriesUpdates()
+    self.state.update_schedule=self.state.update_schedule or {mode='weekly',offset=19800,slots={{day=0,hour=22,minute=0},{day=1,hour=18,minute=0}}}
+    self.series_auto_tick=function()
+        if self.download_stopped then return end
+        if not self.series_check_busy then
+            for key,meta in pairs(self.state.series)do
+                local due,slot=require('update_schedule').due(meta,os.time(),self.state.update_schedule)
+                if meta.manga and meta.auto_updates~=false and self:ownsSeries(key) and due then
+                    meta.auto_attempt=os.time();self.series_check_busy=true
+                    self:checkSeriesUpdate(meta,function()
+                        if not meta.update_error and slot then meta.schedule_completed=slot;self:save()end
+                        self.series_check_busy=false
+                    end);break
+                end
+            end
+        end
+        UI:scheduleIn(60,self.series_auto_tick)
+    end
+    if not os.getenv('YOMIGAMI_TEST')then UI:scheduleIn(30,self.series_auto_tick)end
+end
 function App:toggleFollow(m)
     local key=C.seriesKey(m);local meta=self.state.series[key] or {};self.state.series[key]=meta
     meta.manga=m;meta.title=m.title;meta.followed=not meta.followed
@@ -17,6 +62,7 @@ function App:checkSeriesUpdate(meta,done)
             for _,job in ipairs(self.state.queue)do if C.seriesKey(job.manga)==key and (job.status=='queued' or job.status=='active') then offline[tostring(job.chapter.id)]=true end end
             meta.available={};for _,chapter in ipairs(chapters)do if chapter.id and not offline[tostring(chapter.id)]then meta.available[#meta.available+1]=chapter end end
             table.sort(meta.available,function(a,b)return require('storage').natural(a.title or tostring(a.id),b.title or tostring(b.id))end)
+            self:applySeriesChapters(meta.manga,chapters)
             meta.checked=os.time();meta.update_error=nil;self:save();done()
         end)
     end)
@@ -31,12 +77,24 @@ function App:checkFollowedUpdates()
     end
     nextSeries()
 end
+function App:seriesScheduleMenu()
+    local config=self.state.update_schedule or {}
+    self:menu('Automatic chapter checks',{
+        {text='While Yomigami is running; missed runs catch up on reopening.'},
+        {text='Sunday 10 PM + Monday 6 PM (India time)'..(config.mode=='weekly' and ' · Selected' or ''),callback=function()
+            self.state.update_schedule={mode='weekly',offset=19800,slots={{day=0,hour=22,minute=0},{day=1,hour=18,minute=0}}};self:save()
+        end},
+        {text='Every six hours'..(config.mode~='weekly' and ' · Selected' or ''),callback=function()self.state.update_schedule={mode='interval'};self:save()end},
+    })
+end
 function App:followedSeries()
     local items={{text=self.series_check_busy and 'Checking sources…' or 'Check all followed series now',callback=function()self:checkFollowedUpdates()end}}
+    items[#items+1]={text='Automatic download schedule',callback=function()self:seriesScheduleMenu()end}
     local count=0
     for _,meta in pairs(self.state.series)do if meta.manga then local m=meta;count=count+1
         items[#items+1]={text=(m.followed and 'Following · ' or 'Not followed · ')..m.title..(m.update_error and ' · Check failed' or ' · '..#(m.available or {})..' available'),callback=function()
             local choices={
+                {text='Auto-download new chapters: '..(m.auto_updates==false and 'Off' or 'On'),callback=function()m.auto_updates=m.auto_updates==false;self:save()end},
                 {text=m.followed and 'Unfollow' or 'Follow series',callback=function()self:toggleFollow(m.manga)end},
                 {text='Check this series',callback=function()self:checkSeriesUpdate(m,function()self:followedSeries()end)end},
                 {text='Choose from all chapters',callback=function()self:mangaDetails(m.manga)end},

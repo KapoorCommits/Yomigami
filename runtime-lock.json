@@ -1,14 +1,16 @@
 {
-  "app": "0.5.0-alpha",
+  "app": "0.5.0",
   "target": "kindlehf",
   "firmware_test_target": "5.18.5.0.1",
   "runtime_release": "v2026.07.1",
-  "source_engine_release": "v1.41.6",
+  "source_engine_release": "v1.43.4",
   "inputs": {
     "koreader-kindlehf-v2026.07.1.zip": "3343a916d12f36c01b59df1f65bd83ff5616e6c2a4dfbe919e7fa1400b8b1bbb",
     "rakuyomi-kindlehf-v1.41.6.zip": "cc225cb99297054bb8eeb7cb972808009539434558f83cfbfe1634ae2b6f6768",
-    "rakuyomi-macos-v1.41.6.zip": "da04d99fd46cac1fd323f83ffab7bdfb2eafe993e630e7a25fb7294edc7bc768"
+    "rakuyomi-macos-v1.41.6.zip": "da04d99fd46cac1fd323f83ffab7bdfb2eafe993e630e7a25fb7294edc7bc768",
+    "rakuyomi-macos-v1.43.4.zip": "e9b5f551555abcb74a63cdc3d8855f0059bc149e3de65fd1ed2e3d9fcbd246c4",
+    "rakuyomi-kindlehf-v1.43.4.zip": "9d53ff14535f68e0a417638b24ecf91946df4e28b5b54141bfd2289aeeb6405e"
   },
   "koreader_commit": "9192014d8bd82a91dc1012473be0f238dedfdb54",
-  "rakuyomi_commit": "c79563b29e18a7c373d780a4af2ce1961b6184a6"
+  "rakuyomi_commit": "eed680438a0443c7449e3b6942aeb54352596af1"
 }

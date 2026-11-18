@@ -58,7 +58,7 @@ function App:schedulePrefetch()
     local pan_x=self.pan_x or 0
     local warmPan=pan~=self.nav.offset
     self.prefetch_tick=function()
-        if not self.doc or self.cache_signature~=signature then return end
+        if not self.doc or self.cache_signature~=signature or self.nav.page~=page then return end
         if warmPan then
             warmPan=false
             local key=page..'/'..pan..'/'..pan_x
@@ -66,7 +66,7 @@ function App:schedulePrefetch()
                 local ok,image,h,w,transform=pcall(self.doc.render,self.doc,page,self.w,self:readerHeight(),self.state.fit,pan,self.zoom,pan_x,self.state.contrast,self.state.autocrop)
                 if ok then self.page_cache[key]={page=page,image=image,h=h,w=w,transform=transform};self:trimPageCache()end
             end
-            UI:scheduleIn(.02,self.prefetch_tick);return
+            UI:scheduleIn(.12,self.prefetch_tick);return
         end
         i=i+1;local n=targets[i];if not n then return end
         local key=n..'/0/0'
@@ -74,8 +74,8 @@ function App:schedulePrefetch()
             local ok,image,h,w,transform=pcall(self.doc.render,self.doc,n,self.w,self:readerHeight(),self.state.fit,0,self.zoom,0,self.state.contrast,self.state.autocrop)
             if ok then self.page_cache[key]={page=n,image=image,h=h,w=w,transform=transform};self:trimPageCache()end
         end
-        UI:scheduleIn(.02,self.prefetch_tick)
+        UI:scheduleIn(.12,self.prefetch_tick)
     end
-    UI:scheduleIn(.05,self.prefetch_tick)
+    UI:scheduleIn(.4,self.prefetch_tick)
 end
 end

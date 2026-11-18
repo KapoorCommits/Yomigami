@@ -30,6 +30,7 @@ end
 function App:paintHighlights(bb)
     local t=self.page_transform;if not t or not self.page_image then return end
     local entries=(self.state.annotations or {})[self.book.path] or {}
+    if #entries==0 then return end
     local key=self:renderSignature()..':'..self.nav.page..':'..#entries
     if not self.highlight_overlay or self.highlight_overlay.key~=key then
         local ok,boxes=pcall(require('highlight_anchor').boxes,self.doc,self.nav.page,entries)

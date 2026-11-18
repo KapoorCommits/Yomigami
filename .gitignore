@@ -7,3 +7,6 @@ __pycache__/
 .DS_Store
 
 device-readback/
+
+# Local device maintenance, not part of the public reader.
+tools/kindle-home/

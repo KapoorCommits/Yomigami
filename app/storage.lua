@@ -14,6 +14,23 @@ function S.load(path,fallback)
     if lfs.attributes(path) or lfs.attributes(path..'.bak') then return fallback,'Could not read '..path..'. Original files preserved.' end
     return fallback
 end
+-- Replay only checkpoints newer than the last complete state save.
+function S.restoreProgress(state,checkpoint)
+    local c=checkpoint
+    if type(c)~='table' or type(c.generation)~='number' or c.generation%1~=0
+        or c.generation<=(tonumber(state.progress_generation) or 0)
+        or type(c.path)~='string' or type(c.progress)~='table' then return false end
+    local p=c.progress
+    if type(p.page)~='number' or type(p.count)~='number' or p.page%1~=0 or p.count%1~=0
+        or p.page<1 or p.page>p.count then return false end
+    state.progress=state.progress or {};state.progress[c.path]=p
+    state.progress_generation=c.generation
+    if type(c.series_key)=='string' then
+        state.series=state.series or {};state.series[c.series_key]=state.series[c.series_key] or {}
+        state.series[c.series_key].last_path=c.path
+    end
+    return true
+end
 function S.writeDurable(path,data)
     local f,err=io.open(path,'wb');if not f then return nil,err end
     local ok,msg=f:write(data)

@@ -1,36 +1,47 @@
-# Bundled English manga sources
+# Manga sources — October 11 development bundle
 
-A curated set of 20 compatible adapters, not a measured popularity ranking. Weeb Central and MangaDex remain included. Existing manga search searches the installed sources automatically.
+The bundle contains 25 English-capable adapters, including 13 of the 14 requested sources. All 25 loaded in the official Rakuyomi v1.43.4 desktop engine. Loading an adapter does not prove that its website or chapter downloads work.
 
-All 20 loaded in the pinned Rakuyomi v1.41.6 desktop engine and returned manga results from a live search or catalog request on 2026-09-08. Some searches failed while catalog requests succeeded; availability remains site- and network-dependent. Chapter downloads and this source pack have not received further tests or Kindle verification.
-
-| Source | Adapter version | Live metadata result |
+| Source | Version | Live search check on October 11 |
 | --- | --- | --- |
-| Weeb Central | 8 | Search/catalog returned titles |
-| MangaDex | 14 | Search/catalog returned titles |
-| Asura Scans | 19 | Search/catalog returned titles |
-| Flame Comics | 4 | Search/catalog returned titles |
-| Guya | 2 | Search/catalog returned titles |
-| TCB Scans | 6 | Search/catalog returned titles |
-| Magus Manga | 2 | Search/catalog returned titles |
-| Hive Scans | 2 | Search/catalog returned titles |
-| Vortex Scans | 3 | Search/catalog returned titles |
-| Danke fürs Lesen | 3 | Search/catalog returned titles |
-| MangaRead.org | 2 | Search/catalog returned titles |
-| Chikari | 1 | Search/catalog returned titles |
-| EzManga | 2 | Search/catalog returned titles |
-| MangaBat | 9 | Search/catalog returned titles |
-| MangaDemon | 7 | Search/catalog returned titles |
-| MangaNato | 8 | Search/catalog returned titles |
-| Manhuaplus.org | 1 | Search/catalog returned titles |
-| Nyx Scans | 1 | Search/catalog returned titles |
-| MangaFire | 8 | Search/catalog returned titles |
-| MANGA Plus | 6 | Search/catalog returned titles |
+| Weeb Central | 8 | 32 results |
+| MangaDex | 14 | 20 results |
+| Asura Scans | 19 | Not repeated in this update |
+| Flame Comics | 4 | Not repeated in this update |
+| Guya | 2 | Not repeated in this update |
+| TCB Scans | 6 | Not repeated in this update |
+| Magus Manga | 2 | Not repeated in this update |
+| Hive Scans | 2 | Not repeated in this update |
+| Vortex Scans | 3 | Not repeated in this update |
+| Danke fürs Lesen | 3 | Not repeated in this update |
+| MangaRead.org | 2 | Not repeated in this update |
+| Chikari | 1 | Not repeated in this update |
+| EzManga | 2 | Not repeated in this update |
+| MangaBat | 9 | Not repeated in this update |
+| MangaDemon | 7 | Not repeated in this update |
+| MangaNato | 8 | Not repeated in this update |
+| Manhuaplus.org | 1 | Not repeated in this update |
+| Nyx Scans | 1 | Not repeated in this update |
+| MangaFire | 8 | Not repeated in this update |
+| MANGA Plus | 6 | Not repeated in this update |
+| Comix | 26 | Source returned an error |
+| Mangadotnet | 7 | 28 results |
+| MangaKatana | 3 | 20 results |
+| MangaPill | 2 | 50 results |
+| Bato.to | 5 | No results for test query |
 
-Adapters come from the [Aidoku Community catalog](https://aidoku-community.github.io/sources/index.min.json). Exact binary hashes and upstream download URLs are pinned in [the manifest](../assets/sources/manifest.json). Upstream licenses and credits are preserved.
+## Atsumaru
+
+Atsumaru is **not bundled**. The adapter found in [Yomu](https://github.com/Smexhy/yomu-aidoku-sources) has a [license prohibiting repackaging and redistribution](https://github.com/Smexhy/yomu-aidoku-sources/blob/main/LICENSE). An independently licensed compatible adapter or the author's permission is needed before it can be included. No replacement is silently presented as Atsumaru.
 
 ## Install on an existing Kindle
 
-Quit Yomigami. Copy the source archive from `Yomigami-20-English-Sources.zip` to Kindle storage root and its `documents/Add 20 English Sources.sh` to `documents`. Disconnect USB, open **Add 20 English Sources**, then open Yomigami → **Mangas**. Existing books, settings and additional installed sources are preserved; replaced adapters are backed up.
+Close Yomigami before each update. Install `Yomigami-Manga-Engine-v1.43.4.zip` first and `Yomigami-Manga-Sources-20261011.zip` second: extract on your computer, copy the extracted contents to Kindle storage, eject USB, then open the corresponding **Update Manga Engine** or **Update Manga Sources** book. The combined October update launcher, when supplied, performs these steps for you before installing the reader.
 
-New full packages also include these 20 adapters. No app version change is needed for the sources-only installer.
+Existing custom adapters are retained. Previous source files and the engine are backed up separately. Books, bookmarks and source settings are preserved. Manga search continues to query installed sources automatically.
+
+Comix is included but currently fails the live search check. Bato.to loads but returned no titles for the test query. Neither is advertised as working. No new chapter-download or Kindle runtime verification was completed for this bundle.
+
+## Provenance
+
+Modern adapters come from [Aidoku Community](https://github.com/Aidoku-Community/sources). MangaKatana, MangaPill and Bato.to come from the [legacy catalog maintained by Tachibana Shin](https://github.com/tachibana-shin/aidoku-community-sources). Exact download URLs and SHA-256 hashes are recorded in [the manifest](../assets/sources/manifest.json). License texts are in `licenses/`.

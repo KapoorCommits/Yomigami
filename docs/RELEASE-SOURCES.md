@@ -1,10 +1,10 @@
-# Sources for the 0.4.0 prebuilt alpha
+# Sources for the 0.5.0 release
 
 The installer packages Yomigami’s Lua application, the official KOReader kindlehf
-v2026.07.1 runtime with the changes in `docs/runtime.patch`, and Rakuyomi’s v1.41.6
+v2026.07.1 runtime with the changes in `docs/runtime.patch`, and Rakuyomi’s v1.43.4
 kindlehf source engine. It does not require a separately installed KOReader.
 
-Download **Yomigami-0.4.0-Sources.tar.gz** from the same GitHub release as the installer.
+Download **Yomigami-0.5.0-Sources.tar.gz** from the same GitHub release as the installer.
 It contains:
 
 - `yomigami/`: application source, local packaging scripts, notices, build guide and runtime patch.
@@ -38,3 +38,7 @@ working trees; apply the included upstream build recipes/patches when rebuilding
 The collection helpers in `scripts/collect_release_sources.py` and
 `scripts/collect_release_dependencies.py` require Python 3.11+ and internet access.
 They fetch source only, do not execute it, and store results under `build/release-sources`.
+
+The original Rakuyomi URL was unavailable during release preparation. The source
+companion includes the identical pinned commit from the public `kravenos/krakuyomi`
+fork. The bundled engine binary is unchanged from the recorded v1.43.4 input.

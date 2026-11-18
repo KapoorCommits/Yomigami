@@ -6,7 +6,7 @@ and license notices remain applicable. Naming projects here does not imply endor
 | Project | Contribution | Source and version | License |
 | --- | --- | --- | --- |
 | KOReader | Private Kindle device/widget runtime, framebuffer/input/power lifecycle, document interfaces | [v2026.07.1](https://github.com/koreader/koreader/tree/v2026.07.1), commit `9192014d8bd82a91dc1012473be0f238dedfdb54` | AGPL-3.0; component notices retained |
-| Rakuyomi | Rust manga source and download engine | [v1.41.6](https://github.com/tachibana-shin/rakuyomi/tree/v1.41.6), commit `c79563b29e18a7c373d780a4af2ce1961b6184a6` | AGPL-3.0 |
+| Rakuyomi | Rust manga source and download engine | [v1.43.4](https://github.com/kravenos/krakuyomi/tree/eed680438a0443c7449e3b6942aeb54352596af1), commit `eed680438a0443c7449e3b6942aeb54352596af1` | AGPL-3.0 |
 | Aidoku Community sources | Bundled source adapters | [Source repository](https://github.com/Aidoku-Community/sources); exact adapter versions/hashes in `assets/sources/manifest.json` | Apache-2.0 / MIT; see `licenses/` |
 | ZlibraryKO | Protocol reference for Yomigami’s own Z-Library adapter | [Inspected revision](https://github.com/ZlibraryKO/zlibrary.koplugin/tree/134b3c8d68f143316d81610ac3324a27ed2e82d6) | AGPL-3.0 |
 | MuPDF and KOReader base | Native document rendering and FFI support | [KOReader base](https://github.com/koreader/koreader-base), pinned through the KOReader release’s submodule tree; [MuPDF](https://mupdf.com/) | Upstream component licenses, including AGPL |
@@ -37,3 +37,5 @@ The Anna adapter uses its [documented member API](https://annas-archive.gl/faq#a
 not the plugin scraper. Open Textbook Library uses its
 [official API schema](https://open.umn.edu/opentextbooks/api-docs/library.yml).
 Provider APIs and availability are independent of Yomigami.
+
+Legacy MangaKatana, MangaPill and Bato.to adapters are from [Tachibana Shin’s Aidoku sources](https://github.com/tachibana-shin/aidoku-community-sources), under Apache-2.0 / MIT. The MIT notice is preserved in `licenses/aidoku-legacy-sources-MIT.txt`.

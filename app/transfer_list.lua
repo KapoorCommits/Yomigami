@@ -1,6 +1,6 @@
 -- SPDX-License-Identifier: AGPL-3.0-or-later
 local UI=require('ui/uimanager');local BB=require('ffi/blitbuffer');local T=require('book_transfer');local Store=require('storage')
-local V=require('discover'):extend{}
+local V=require('discover'):extend{covers_fullscreen=true}
 function V:init()
     self.per=6;self.page=1;require('discover').init(self)
     self.tick=function()if self.closed then return end
@@ -18,7 +18,7 @@ function V:paintTo(bb)
     if #a.state.book_queue==0 then a:centerLabel(bb,'Your next book starts in PDFs.',p,s(210),w,s(60),18,false)end
     for slot=1,self.per do local j=a.state.book_queue[(self.page-1)*self.per+slot]
         if j then local y=s(155)+(slot-1)*s(76);local _,mp=T.paths(a.root,j.id);local m=Store.load(mp,{});local total=m.total or j.total;local bytes=j.status=='complete' and total or m.bytes or 0
-            bb:paintRect(p,y,w,s(67),BB.Color8(246));a:centerLabel(bb,j.book.title,p,y+s(3),w,s(29),16,true)
+            require('appearance').card(bb,a,p,y,w,s(67),j.status=='active');a:centerLabel(bb,j.book.title,p,y+s(3),w,s(29),16,true)
             local label=j.status..' · '..T.format(bytes)..' / '..T.format(total)
             a:centerLabel(bb,label,p,y+s(33),w,s(24),11,false)
             if total and total>0 then bb:paintRect(p,y+s(64),w,s(2),BB.Color8(210));bb:paintRect(p,y+s(64),math.floor(w*math.min(1,bytes/total)),s(2),BB.COLOR_BLACK)end
@@ -33,6 +33,7 @@ function V:paintTo(bb)
             end)
         end
     end
+    self:button(bb,'manage','Cancel all / Clear failed & queued',p,a.h-s(120),w,s(40),function()a:bookDownloadActions(function()self.page=1;UI:setDirty(self,'full')end)end)
     self:button(bb,'previous','‹',p,a.h-s(65),s(48),s(40),function()self:onPrevious()end)
     a:centerLabel(bb,tostring(self.page),p+s(60),a.h-s(65),w-s(120),s(40),13,false)
     self:button(bb,'next','›',a.w-p-s(48),a.h-s(65),s(48),s(40),function()self:onNext()end)

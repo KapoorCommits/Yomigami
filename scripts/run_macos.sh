@@ -7,7 +7,8 @@ export KO_HOME="$YOMIGAMI_HOME/runtime"
 export YOMIGAMI_SOURCE_PORT=18787
 export RAKUYOMI_TCP_PORT="$YOMIGAMI_SOURCE_PORT"
 mkdir -p "$YOMIGAMI_HOME/library" "$KO_HOME" "$YOMIGAMI_HOME/sources"
-ENGINE="$ROOT/build/source-macos/rakuyomi.koplugin/server"
+ENGINE_VERSION="$(python3 -c 'import json,sys;print(json.load(open(sys.argv[1]))["source_engine_release"])' "$ROOT/runtime-lock.json")"
+ENGINE="$ROOT/build/source-macos-$ENGINE_VERSION/rakuyomi.koplugin/server"
 RUNTIME="$ROOT/build/macos/KOReader.app/Contents/koreader"
 if [ ! -x "$RUNTIME/luajit" ]; then echo 'Extract the macOS runtime first. See README.' >&2; exit 1; fi
 if [ -x "$ENGINE" ] && [ "${YOMIGAMI_NO_ENGINE:-0}" != 1 ]; then

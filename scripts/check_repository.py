@@ -5,6 +5,7 @@ ROOT = Path(__file__).resolve().parents[1]
 files = [Path(p) for p in subprocess.check_output(['git','ls-files'], cwd=ROOT, text=True).splitlines()]
 for p in files:
  assert p.parts[0] not in {'build','downloads','dist','device-readback','upstream'}, f'Generated/private path tracked: {p}'
+ assert str(p).startswith('tools/kindle-home/') is False, f'Private device tooling tracked: {p}'
  assert p.name not in {'state.json','zlibrary-session.json','source.log','crash.log'}, f'Private data tracked: {p}'
  if p.suffix == '.py':
   with tempfile.TemporaryDirectory() as d:

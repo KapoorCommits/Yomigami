@@ -14,9 +14,7 @@ function O:onClose() UI:close(self);self.owner:refresh();return true end
 function O:hit(id,x,y,w,h,fn) self.hits[#self.hits+1]={id=id,x=x,y=y,w=w,h=h,fn=fn} end
 function O:button(bb,id,text,x,y,w,h,fn,active)
     local a=self.owner
-    bb:paintRect(x,y,w,h,active and BB.COLOR_BLACK or BB.Color8(245))
-    if not active then bb:paintBorder(x,y,w,h,a:s(1),BB.Color8(175)) end
-    a:centerLabel(bb,text,x,y,w,h,13,true,active);self:hit(id,x,y,w,h,fn)
+require('appearance').button(bb,a,text,x,y,w,h,active);self:hit(id,x,y,w,h,fn)
 end
 function O:paintTo(bb)
     local a=self.owner;local s=function(n)return a:s(n)end;local p=self.power
@@ -46,20 +44,26 @@ function O:paintTo(bb)
     local function contrast(v)a.state.contrast=v/100;a:save();if a.doc then a:renderPage()end;dirty()end
     row('contrast','Contrast',s(352),math.floor((a.state.contrast or 1)*100+.5),50,200,true,contrast,function()contrast(100)end)
     a:label(bb,'100 is the original page tone.',s(28),s(438),11,false,a.w-s(56))
-    local y=s(464);local gap=s(12);local w=math.floor((a.w-s(56)-gap)/2);local h=s(40)
+    local y=s(464);local gap=s(12);local w=math.floor((a.w-s(56)-gap)/2);local h=s(44)
     local function choice(id,text,col,row,fn,active)
-        self:button(bb,id,text,s(28)+(col-1)*(w+gap),y+(row-1)*s(48),w,h,fn,active)
+        self:button(bb,id,text,s(28)+(col-1)*(w+gap),y+(row-1)*s(50),w,h,fn,active)
     end
     if a.doc then
-        local function fit(mode)a.state.fit=mode;a.zoom=1;a.pan_x=0;a.nav.offset=0;a:renderPage();a:save();dirty()end
+        local function fit(mode)a.state.fit=mode;a.zoom=1;a.pan_x=0;a.nav.offset=0;a:renderPage();a:save();if UI:getTopmostVisibleWidget()==self then dirty()else a:refresh()end end
         choice('fit-page','Fit page',1,1,function()fit('page')end,a.state.fit=='page')
-        choice('fit-width','Fit width',2,1,function()fit('width')end,a.state.fit=='width')
+        choice('fit-width',a.state.fit=='edge' and 'Edge-to-edge ▾' or 'Fit width ▾',2,1,function()
+            self:onClose();a:menu('Page fit',{
+                {text='Fit whole page · keep all content visible',callback=function()fit('page')end},
+                {text='Fit width · scroll taller pages',callback=function()fit('width')end},
+                {text='Edge-to-edge · trim blank borders, keep text',callback=function()fit('edge')end},
+            })
+        end,a.state.fit=='width' or a.state.fit=='edge')
         choice('rtl','Right to left',1,2,function()a.state.direction='rtl';a:save();dirty()end,a.state.direction=='rtl')
         choice('ltr','Left to right',2,2,function()a.state.direction='ltr';a:save();dirty()end,a.state.direction=='ltr')
         choice('zoom','Zoom',1,3,function()self:onClose();a:zoomMenu()end)
         choice('jump','Go to page',2,3,function()self:onClose();a:jumpDialog()end)
         choice('animation','Page animation: '..(a.state.animation==false and 'Off' or 'On'),1,4,function()a.state.animation=a.state.animation==false;a:save();dirty()end)
-        choice('crop','Auto-crop: '..(a.state.autocrop and 'On' or 'Off'),2,4,function()a.state.autocrop=not a.state.autocrop;a:renderPage();a:save();dirty()end,a.state.autocrop)
+        choice('crop','Auto-crop: '..(a.state.fit=='edge' and 'Tight' or a.state.autocrop and 'On' or 'Off'),2,4,function()if a.state.fit=='edge' then a.state.fit='width';a.state.autocrop=false else a.state.autocrop=not a.state.autocrop end;a.nav.offset=0;a:renderPage();a:save();dirty()end,a.state.fit=='edge' or a.state.autocrop)
         choice('prefetch','Pre-render: '..(a.state.prefetch==false and 'Off' or 'On'),1,5,function()a.state.prefetch=a.state.prefetch==false;a:clearPageCache();a:renderPage();a:save();dirty()end,a.state.prefetch~=false)
         choice('more','Text, notes & controls',2,5,function()self:onClose();a:extraReaderOptions()end)
         choice('theme',a.state.dark_mode and 'Dark mode' or 'Light mode',1,6,function()a.state.dark_mode=not a.state.dark_mode;require('device').screen:toggleNightMode();a:save();UI:setDirty(self,'full')end,a.state.dark_mode)

@@ -24,6 +24,7 @@ function App:init()
     end
     self.key_events={Back={{'Back'},{'Esc'}},Forward={{'Right'},{'PgFwd'},{'Space'}},Backward={{'Left'},{'PgBack'}}}
     self.state,self.state_error,self.recovery_notice=Store.load(self.root..'/state.json',{progress={},direction='rtl',fit='page'})
+    Store.restoreProgress(self.state,Store.load(self.root..'/reading-position.json',{}))
     self.state.progress=self.state.progress or {}
     self.state.downloads=self.state.downloads or {}
     self.state.series=self.state.series or {}
@@ -37,13 +38,16 @@ function App:init()
     if (Device.screen.night_mode or false)~=(self.state.dark_mode or false) then Device.screen:toggleNightMode() end
     self:startDownloads()
     self:startBookDownloads()
+    self:startSeriesUpdates()
 end
 function App:s(n) return math.floor(n*self.scale+.5) end
 function App:save()
+    if self.progress_save_tick then UI:unschedule(self.progress_save_tick);self.progress_save_tick=nil end
     if self.state_error then return nil,self.state_error end -- Never overwrite an unreadable original.
     self:rememberReadingSettings()
     local ok,err=Store.save(self.root..'/state.json',self.state)
-    if not ok then self:message('Progress could not be saved: '..tostring(err)) end
+    if ok then os.remove(self.root..'/reading-position.json')
+    else self:message('Progress could not be saved: '..tostring(err)) end
     return ok,err
 end
 function App:message(text) UI:show(Info:new{text=tostring(text),timeout=5}) end
@@ -53,7 +57,8 @@ function App:refreshPage(delta,result)
     local interval=self.state[self.book and self.book.format=='CBZ' and 'refresh_manga' or 'refresh_text'] or 6
     local full=interval>0 and self.turns_since_full>=interval
     if full then self.turns_since_full=0 end
-    if result=='page' and not full and Device:canDoSwipeAnimation() and self.state.animation~=false then
+    Device.screen:setSwipeAnimations(false)
+    if (result=='page' or result=='pan') and not full and Device:canDoSwipeAnimation() and self.state.animation~=false then
         Device.screen:setSwipeAnimations(true)
         Device.screen:setSwipeDirection((delta>0)~=(self.state.direction=='rtl'))
     end
@@ -110,36 +115,46 @@ function App:centerLabel(bb,text,x,y,w,h,size,bold,white)
     t:paintTo(bb,x+math.floor((w-d.w)/2),y+math.floor((h-d.h)/2));t:free()
 end
 function App:hit(x,y,w,h,fn) self.hits[#self.hits+1]={x=x,y=y,w=w,h=h,fn=fn} end
-function App:button(bb,title,x,y,w,fn,active)
-    local h=self:s(34)
-    if active then bb:paintRect(x,y,w,h,BB.COLOR_BLACK) else bb:paintBorder(x,y,w,h,self:s(1),BB.COLOR_BLACK) end
-    self:centerLabel(bb,title,x,y,w,h,13,false,active)
-    self:hit(x,y,w,h,fn)
+function App:button(bb,title,x,y,w,fn,active,disabled)
+    local h=self:s(44)
+    require('appearance').button(bb,self,title,x,y,w,h,active,disabled)
+    if not disabled then self:hit(x,y,w,h,fn) end
 end
 function App:cover(book,w,h)
-    local key=book.path..':'..w..':'..h
+    local key=(book.cover_path or book.path)..':'..w..':'..h
+    self.cover_clock=(self.cover_clock or 0)+1;self.cover_used=self.cover_used or {};self.cover_used[key]=self.cover_clock
     if self.covers[key] then return self.covers[key] end
     local doc
     local ok,result=pcall(function() doc=Doc.open(book.cover_path or book.path); return doc:render(1,w,h,'page',0) end)
     if doc then doc:close() end
     if not ok then return nil end
     self.covers[key]=result
+    local bytes=0;local entries={}
+    for k,v in pairs(self.covers)do
+        local n=v:getWidth()*v:getHeight()*v:getBpp()/8
+        bytes=bytes+n;entries[#entries+1]={key=k,bytes=n,used=self.cover_used[k] or 0}
+    end
+    table.sort(entries,function(a,b)return a.used<b.used end)
+    for _,entry in ipairs(entries)do
+        if bytes<=8*1024*1024 then break end
+        if entry.key~=key then self.covers[entry.key]:free();self.covers[entry.key]=nil;self.cover_used[entry.key]=nil;bytes=bytes-entry.bytes end
+    end
     return result
 end
-function App:clearCovers() for _,b in pairs(self.covers) do b:free() end; self.covers={} end
+function App:clearCovers() for _,b in pairs(self.covers) do b:free() end; self.covers={};self.cover_used={} end
 function App:paintTo(bb,x,y)
     self.hits={};self.book_hits={}; bb:paintRect(0,0,self.w,self.h,BB.COLOR_WHITE)
     if self.screen_name=='reader' then return self:paintReader(bb) end
     local p=self:s(28)
     self:label(bb,'Yomigami',p,self:s(25),34,true,self.w-p*2)
-    self:label(bb,'A quiet place to read.',p,self:s(72),13,false,self.w-p*2)
+    self:label(bb,'Your library',p,self:s(75),13,false,self.w-p*2)
     self:button(bb,'Mangas',self.w-self:s(310),self:s(30),self:s(82),function() self:showSources() end)
     self:button(bb,'PDFs',self.w-self:s(218),self:s(30),self:s(76),function() self:showBooks() end)
     self:button(bb,'+',self.w-self:s(132),self:s(30),self:s(44),function() self:libraryActions() end)
     self:button(bb,'×',self.w-self:s(78),self:s(30),self:s(48),function() self:quit() end)
     local filters={'All','Reading','Manga','PDFs','EPUBs'}
     for i,f in ipairs(filters) do
-        self:button(bb,f,p+(i-1)*self:s(91),self:s(108),self:s(82),function() self.filter=f;self.shelf=1;self:clearCovers();self:refresh() end,self.filter==f)
+        self:button(bb,f,p+(i-1)*self:s(91),self:s(108),self:s(82),function() if self.filter~=f then self.filter=f;self.shelf=1;self:refresh() end end,self.filter==f)
     end
     local books=self:items()
     local rows=2; local cols=3; local per=rows*cols
@@ -157,7 +172,7 @@ function App:paintTo(bb,x,y)
         if book then
             local cx=p+((slot-1)%3)*(cw+gap);local cy=top+math.floor((slot-1)/3)*(ch+self:s(12))
             local coverh=ch-self:s(62)
-            bb:paintRect(cx+self:s(3),cy+self:s(4),cw,coverh,BB.Color8(210))
+            bb:paintRect(cx+self:s(2),cy+self:s(3),cw,coverh,BB.Color8(226))
             bb:paintRect(cx,cy,cw,coverh,BB.Color8(244))
             local image=self:cover(book,cw,coverh)
             if image then bb:blitFrom(image,cx+math.floor((cw-image:getWidth())/2),cy+math.floor((coverh-image:getHeight())/2),0,0,image:getWidth(),image:getHeight())
@@ -165,12 +180,12 @@ function App:paintTo(bb,x,y)
             bb:paintBorder(cx,cy,cw,coverh,1,BB.Color8(150))
             self:label(bb,book.title,cx,cy+coverh+self:s(10),15,true,cw)
             local saved=self:bookmarkFor(book)
-            local caption=book.chapters and (#book.chapters..' chapters / Offline') or book.format..'  /  '..(saved and (saved.page..' of '..saved.count) or 'Not started')
+            local caption=book.chapters and (#book.chapters..' chapters · Offline') or book.format..'  /  '..(saved and (saved.page..' of '..saved.count) or 'Unread')
             if not saved then self:label(bb,caption,cx,cy+coverh+self:s(34),11,false,cw) end
             if saved then
                 bb:paintRect(cx,cy+coverh-3,math.floor(cw*saved.page/saved.count),3,BB.COLOR_BLACK)
                 self:paintBookmark(bb,cx+cw-self:s(34),cy,self:s(24),self:s(42))
-                caption=book.chapters and ('Ch '..tostring(saved.chapter_num or '?')..' / Page '..saved.page) or ('Bookmark / '..saved.page..' of '..saved.count)
+                caption=book.chapters and ((saved.chapter_num and ('Ch '..tostring(saved.chapter_num)..' · ') or '')..'Page '..saved.page) or ('Page '..saved.page..' of '..saved.count)
                 self:label(bb,caption,cx,cy+coverh+self:s(34),11,false,cw)
             end
             self:hit(cx,cy,cw,ch,function() self:openBook(book) end)
@@ -179,12 +194,12 @@ function App:paintTo(bb,x,y)
     end
     bb:paintRect(p,foot,self.w-2*p,1,BB.Color8(160))
     self:label(bb,#books..' books  /  '..self.shelf..' of '..pages,p,foot+self:s(19),12,false,self:s(230))
-    self:button(bb,'Back',self.w-self:s(198),foot+self:s(12),self:s(74),function() self:changeShelf(-1) end)
-    self:button(bb,'Next',self.w-self:s(112),foot+self:s(12),self:s(82),function() self:changeShelf(1) end)
+    self:button(bb,'‹',self.w-self:s(142),foot+self:s(12),self:s(48),function() self:changeShelf(-1) end,false,self.shelf<=1)
+    self:button(bb,'›',self.w-self:s(78),foot+self:s(12),self:s(48),function() self:changeShelf(1) end,false,self.shelf>=pages)
 end
 function App:changeShelf(delta)
     self.shelf=math.max(1,math.min(math.max(1,math.ceil(#self:items()/6)),self.shelf+delta))
-    self:clearCovers();self:refresh()
+    self:refresh()
 end
 function App:openBook(book,password)
     if book.chapters then return self:chapterMenu(book) end
@@ -199,7 +214,8 @@ function App:openBook(book,password)
     end
     self:clearPageCache()
     if self.doc then self:saveProgress();self.doc:close() end
-    self:clearCovers();self.doc=document;self.book=book
+    self.doc=document;self.book=book
+    Device.input.disable_double_tap=book.format=='CBZ'
     local saved=self.state.progress[book.path]
     local page=saved and saved.page
     if saved and document.reflowable and saved.count~=document.count then page=math.floor(((saved.page-1)/math.max(1,saved.count-1))*(document.count-1))+1 end
@@ -214,14 +230,26 @@ function App:renderPageUncached()
     if ok then self.page_transform=transform;self.page_image=image;self.content_height=content;self.content_width=content_width;self.render_error=nil
     else self.render_error=tostring(image);self.content_height=vh end
 end
-function App:saveProgress()
+function App:saveProgress(deferred)
     if not self.book or self.render_error then return end
     self.state.progress[self.book.path]={page=self.nav.page,count=self.nav.count,last_read=os.time(),chapter_title=self.book.title,chapter_num=self.book.chapter_num}
     if self.book.series_key then
         local meta=self.state.series[self.book.series_key] or {};meta.last_path=self.book.path
         self.state.series[self.book.series_key]=meta
     end
-    self:save()
+    self.state.progress_generation=(self.state.progress_generation or 0)+1
+    if deferred then
+        if self.progress_save_tick then UI:unschedule(self.progress_save_tick)end
+        self.progress_save_tick=function()
+            self.progress_save_tick=nil
+            if self.state_error or not self.book then return end
+            local checkpoint={generation=self.state.progress_generation,path=self.book.path,
+                progress=self.state.progress[self.book.path],series_key=self.book.series_key}
+            local ok,err=Store.save(self.root..'/reading-position.json',checkpoint)
+            if not ok then self:message('Reading position could not be saved: '..tostring(err))end
+        end
+        UI:scheduleIn(.25,self.progress_save_tick)
+    else self:save()end
 end
 function App:readerHeight()
     return self.chrome_hidden and self.h or self.h-self:s(94)
@@ -241,10 +269,11 @@ function App:paintReader(bb)
             {text='Quit ×',x=490,w=110,fn=function() self:quit() end},
         }
         for _,c in ipairs(controls) do
-            self:centerLabel(bb,c.text,self:s(c.x),0,self:s(c.w),self:s(47),14,true)
+            require('appearance').button(bb,self,c.text,self:s(c.x+4),self:s(2),self:s(c.w-8),self:s(43))
             self:hit(self:s(c.x),0,self:s(c.w),self:s(47),c.fn)
         end
-        self:label(bb,self.book.title,self:s(108),self:s(13),13,false,self:s(162))
+        require('appearance').button(bb,self,'',self:s(104),self:s(2),self:s(192),self:s(43))
+        self:label(bb,self.book.title,self:s(116),self:s(13),13,false,self:s(150))
         self:label(bb,'▾',self:s(278),self:s(13),13,true,self:s(20))
         self:hit(self:s(100),0,self:s(200),self:s(47),function() self:chapterDropdown() end)
     end
@@ -258,7 +287,7 @@ function App:paintReader(bb)
     if not self.chrome_hidden then
     bb:paintRect(margin,foot-self:s(6),self.w-2*margin,1,BB.Color8(160))
     self:label(bb,self.nav.page..' / '..self.nav.count,margin,foot+self:s(7),13,true,self:s(130))
-    self:label(bb,self.state.fit=='width' and 'Fit width' or 'Fit page',self:s(240),foot+self:s(7),12,false,self:s(120))
+    self:label(bb,self.state.fit=='edge' and 'Edge-to-edge' or self.state.fit=='width' and 'Fit width' or 'Fit page',self:s(240),foot+self:s(7),12,false,self:s(120))
     self:label(bb,self.state.direction:upper(),self.w-self:s(60),foot+self:s(7),12,true,self:s(50))
     self:hit(0,foot,self.w,self:s(40),function() self:jumpDialog() end)
     end
@@ -273,7 +302,7 @@ function App:turn(delta)
     self.navigation_direction=delta<0 and -1 or 1
     if self.screen_name~='reader' then return self:changeShelf(delta) end
     if self.boundary then return true end
-    local oldpage=self.nav.page
+    local oldpage,oldoffset,oldpan=self.nav.page,self.nav.offset,self.pan_x
     local result=self.nav:turn(delta,self:readerHeight(),self.content_height)
     if result=='end' or result=='start' then
         if result=='start' then return self:message('First page') end
@@ -296,13 +325,21 @@ function App:turn(delta)
         return true
     end
     if oldpage~=self.nav.page then self.pan_x=0 end
-    self:renderPage();self:saveProgress();self:refreshPage(delta,result);return true
+    self:renderPage()
+    if self.render_error then
+        self.nav.page,self.nav.offset,self.pan_x=oldpage,oldoffset,oldpan
+        self:renderPage();self:refresh()
+        self:message('Could not load the next view. Your place is unchanged; try again.')
+        return true
+    end
+    self:refreshPage(delta,result);self:saveProgress(true);return true
 end
 function App:closeBook()
     self:clearPageCache()
     self:saveProgress()
     if self.page_image then self.page_image:free();self.page_image=nil end
     if self.doc then self.doc:close();self.doc=nil end
+    Device.input.disable_double_tap=true
     self.book=nil;self:restoreReadingDefaults();self.screen_name='library';self:refresh()
 end
 function App:onTap(_,g)
@@ -313,6 +350,9 @@ function App:onTap(_,g)
 end
 function App:onSwipe(_,g)
     local d=g.direction
+    -- Natural swipes are often diagonal; use their horizontal reading direction.
+    if d=='northeast' or d=='southeast' then d='east'
+    elseif d=='northwest' or d=='southwest' then d='west'end
     if self.screen_name=='reader' then
         if (self.zoom or 1)>1 then return self:panZoom(d,g.distance) end
         if d=='north' then self:turn(1) elseif d=='south' then self:turn(-1)
@@ -426,6 +466,7 @@ require('book_queue')(App)
 require('storage_view')(App)
 require('reading_features')(App)
 require('downloads')(App)
+require('download_actions')(App)
 require('prefetch')(App)
 require('reader_extras')(App)
 require('annotations')(App)

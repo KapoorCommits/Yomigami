@@ -223,3 +223,41 @@ Actual Kindle cover-cache refresh and appearance remain pending user confirmatio
 - Reader/passcode installation logs were read back from the Kindle. The user confirmed the reader functioning; individual passcode behaviors still need physical confirmation.
 - The 586 × 880 caption-free cover, highlight candidate package and user book were transferred with byte-for-byte readback verification. Highlight runtime/touch confirmation remains pending.
 - Home-screen customization and storage cleanup were device maintenance, not public reader features or files. No device state, keys or personal books are part of publication.
+
+
+## October 11 reader and source update
+
+- Thirteen isolated reader suites pass, including tight crop, faint-edge preservation, real MuPDF width fitting, diagonal swipes, render-failure rollback, durable checkpoint recovery and per-book fit.
+- Five reader-installer success/failure cases pass. Four engine-installer replacement/rollback cases pass. Source installer checks cover corrupted-archive rejection, repeat installation, backup creation and retention of custom sources, books and settings.
+- All 25 adapters load under the official desktop Rakuyomi v1.43.4 engine. Live metadata results and known failures are recorded in SOURCES.md; adapter loading is not proof of chapter downloads.
+- Original fixture benchmark on this Mac: cached render 0.02 ms versus uncached 0.67 ms. This is a render-only desktop measurement, not Kindle input/display latency or a before/after improvement claim.
+- Connected Kindle's previous reader modules matched the published source. Device main state was 2,786,875 bytes; one representative compact progress checkpoint was 218 bytes. App/engine backup is retained privately outside tracked source.
+- Update payload is staged through USB. Installation, physical animation smoothness, scan-edge behavior and reboot persistence require on-device confirmation after opening Update Yomigami October. Kindle Home is not part of this update.
+
+## November 16 UI polish and schedule
+
+- Rendered and inspected library, chapter, search and download screens using local fixtures at 600 x 800 and 1272 x 1696. These are emulator renders, not physical Kindle screenshots.
+- Added checks for continuous icon strokes and non-overlapping library, search and download controls.
+- Weekly schedule tests cover India time boundaries, catch-up, duplicate suppression and failed-check retry timing.
+- Physical e-ink appearance, touch feel and installation remain pending. Closed-app scheduling and waking from sleep are not implemented.
+
+### Rounded-control refinement
+
+Applied the installed stageshow skill's consistency, spacing and hierarchy guidance to the native Lua UI. Its React demo and animation tooling is not applicable to this framebuffer application; no mock UI is presented as working software.
+
+Close actions now share the rounded button surface and border. Reader toolbar actions use the same control family. Library pagination is visibly disabled at its boundaries and has no inactive tap handler. Unknown chapter numbers no longer display a question mark. Settings rows have a larger gap. Local regression and native emulator checks cover these changes; physical touch feel remains unverified.
+
+### November 16 responsiveness
+
+- Download progress percentages no longer synchronously rewrite state.json and its backup on every poll. New jobs, failures and completed chapters still save durably. Poll interval is 500 ms; immediate queue-fill and completion dispatch remain.
+- Library cover images are retained across filters, shelf navigation and reading sessions with an 8 MiB LRU budget. Explicit cover invalidation remains for book changes.
+- Local regression demonstrates zero full-state writes for 20 progress updates, durable transition saves, one render for a repeated cover, and bounded cache memory. Page-turn animation and gesture behavior are unchanged. These are operation-count improvements, not a measured Kindle latency percentage.
+
+## 0.5.0 release checks (November 18, 2026)
+
+- All 18 native reader regression suites passed, including highlighting, queue cancellation, search ranking, scheduling, touch controls and bounded cover caching.
+- First-install checks passed: missing payload, corrupt payload, existing-folder protection, extraction and subsequent launch.
+- Five reader-installer checks passed, including checksum rejection, syntax failure and rollback after app/cover replacement errors. Engine and source installers passed their failure and preservation checks.
+- The installed Kindle main.lua and appearance.lua hashes match the release source. The two published PNGs were captured from the actual Paperwhite 12 framebuffer at 1272 × 1696 using the installed reader. A temporary library-state copy prevented capture from moving personal bookmarks. Downloads were disabled for capture.
+- The ZIPs do not contain personal books, state, login sessions, device maintenance keys or Kindle Home patches.
+- This is not a claim that every provider works, that another Kindle model is supported, or that every feature was retested on hardware for this release.

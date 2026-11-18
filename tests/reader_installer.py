@@ -1,7 +1,7 @@
 from pathlib import Path
-import os,subprocess,tempfile,shutil
-r=Path(__file__).resolve().parents[1];package=r/'dist/yomigami-highlights-20261004'
-assert (package/'Update Yomigami Highlights.sh').stat().st_size<100000
+import os,subprocess,tempfile,shutil,sys
+r=Path(__file__).resolve().parents[1];package=Path(sys.argv[1]) if len(sys.argv)>1 else r/'dist/yomigami-reader-20261011'
+assert (package/'Update Yomigami Reader.sh').stat().st_size<100000
 assert (package/'Yomigami.sh').stat().st_size<100000
 for mode in ['success','bad-checksum','syntax-failure','swap-failure','cover-failure']:
  with tempfile.TemporaryDirectory() as d:

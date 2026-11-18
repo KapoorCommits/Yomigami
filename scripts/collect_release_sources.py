@@ -24,7 +24,9 @@ def fetch(repo,rev,dest):
    if path not in hashes:continue
    assert remote.startswith('https://github.com/'),remote
    fetch(name,hashes[path],dest/path)
-fetch('koreader/koreader','9192014d8bd82a91dc1012473be0f238dedfdb54',root/'koreader')
-fetch('tachibana-shin/rakuyomi','c79563b29e18a7c373d780a4af2ce1961b6184a6',root/'rakuyomi')
+lock=json.loads((root.parents[1]/'runtime-lock.json').read_text())
+fetch('koreader/koreader',lock['koreader_commit'],root/'koreader')
+# Original upstream URL is unavailable; this fork retains the identical commit.
+fetch('kravenos/krakuyomi',lock['rakuyomi_commit'],root/'rakuyomi')
 (root/'UPSTREAM-SOURCES.json').write_text(json.dumps(entries,indent=2))
 print('DONE',len(entries),'pinned repositories',flush=True)

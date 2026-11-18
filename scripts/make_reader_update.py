@@ -1,15 +1,20 @@
 """Build the October reader update. Does not patch Kindle firmware or user state."""
 from pathlib import Path
-import hashlib, tarfile, base64, zipfile, subprocess
+import hashlib, tarfile, base64, zipfile, subprocess, argparse, json
+parser=argparse.ArgumentParser();parser.add_argument("--date",default="20261011");parser.add_argument('--revision',default='',help='Optional alphanumeric suffix for another build on the same date');args=parser.parse_args()
+assert len(args.date)==8 and args.date.isdigit()
+assert not args.revision or args.revision.isalnum()
+build_id=args.date+('-'+args.revision if args.revision else '')
 r=Path(__file__).resolve().parents[1]
-name='yomigami-highlights-20261004';out=r/'dist'/name;out.mkdir(parents=True,exist_ok=True)
+name='yomigami-reader-'+build_id;out=r/'dist'/name;out.mkdir(parents=True,exist_ok=True)
 files=sorted((r/'app').glob('*.lua'))
 icon=(r/'assets/icon.png').read_bytes()
 assert len(icon)<74000, 'Preserve resolution with indexed PNG; embedded cover must fit scanner limits'
 (out/'launcher-icon.png').write_bytes(icon)
 canonical=(r/'launcher/Yomigami.sh').read_text().replace('# Icon: /mnt/us/yomigami/icon.png','# Icon: data:image/png;base64,'+base64.b64encode(icon).decode())
 (out/'Yomigami.sh').write_text(canonical)
-entries=[(file,'app/'+file.name) for file in files]+[(r/'assets/icon.png','icon.png'),(out/'Yomigami.sh','Yomigami.sh')]
+(out/'version.txt').write_text(json.loads((r/'runtime-lock.json').read_text())['app']+'\n')
+entries=[(out/'version.txt','app/version.txt')]+[(file,'app/'+file.name) for file in files]+[(r/'assets/icon.png','icon.png'),(out/'Yomigami.sh','Yomigami.sh')]
 with tarfile.open(out/'payload.tar.gz','w:gz') as archive:
     for file,name_in_tar in entries:archive.add(file,arcname=name_in_tar)
 digest=hashlib.sha256((out/'payload.tar.gz').read_bytes()).hexdigest()
@@ -85,10 +90,10 @@ eips 1 3 "Reader update installed. Opening Yomigami..."
 exec "$ROOT/launch.sh" --kual --asap
 '''.replace('__NAME__',name).replace('__DIGEST__',digest).replace('__CHECKS__',checks)
 (out/'install.sh').write_text(script)
-launcher='# !/bin/sh'.replace('# !','#!')+'\n# Name: Update Yomigami Highlights\n# Author: Yomigami contributors\n# Icon: data:image/png;base64,'+base64.b64encode(icon).decode()+'\n# DontUseFBInk\nexec sh /mnt/us/'+name+'/install.sh\n'
-(out/'Update Yomigami Highlights.sh').write_text(launcher)
-with zipfile.ZipFile(r/'dist/Yomigami-Highlights-Update.zip','w',zipfile.ZIP_DEFLATED) as z:
+launcher='# !/bin/sh'.replace('# !','#!')+'\n# Name: Update Yomigami Reader\n# Author: Yomigami contributors\n# Icon: data:image/png;base64,'+base64.b64encode(icon).decode()+'\n# DontUseFBInk\nexec sh /mnt/us/'+name+'/install.sh\n'
+(out/'Update Yomigami Reader.sh').write_text(launcher)
+with zipfile.ZipFile(r/'dist'/('Yomigami-Reader-Update-'+build_id+'.zip'),'w',zipfile.ZIP_DEFLATED) as z:
     z.write(out/'payload.tar.gz',name+'/payload.tar.gz');z.write(out/'install.sh',name+'/install.sh')
-    z.writestr('documents/Update Yomigami Highlights.sh',launcher)
-    z.writestr('START_HERE.txt','Existing Yomigami installation required. Copy both extracted folders to Kindle storage, close Yomigami, unplug USB, and open Update Yomigami Highlights in the Kindle library. KUAL is not required. App files, launcher and cover are backed up before replacement. User books/state and native Home are untouched. This is a development build, not hardware-verified. Sources are distributed separately.\n')
+    z.writestr('documents/Update Yomigami Reader.sh',launcher)
+    z.writestr('START_HERE.txt','Existing Yomigami installation required. Copy both extracted folders to Kindle storage, close Yomigami, unplug USB, and open Update Yomigami Reader in the Kindle library. KUAL is not required. App files, launcher and cover are backed up before replacement. User books/state and native Home are untouched. This is a development build, not hardware-verified. Sources are distributed separately.\n')
 print(out);print('Payload SHA256:',digest)

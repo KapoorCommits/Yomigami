@@ -116,6 +116,16 @@ function App:restoreBook(index)
     table.remove(self.state.trash,index);self:save();self:scan()
 end
 function App:trashMenu()
+    -- USB cleanup can remove trashed files while leaving their old menu records.
+    local changed=false
+    for i=#self.state.trash,1,-1 do
+        local exists=false
+        for _,m in ipairs(self.state.trash[i].moves or {})do
+            if lfs.attributes(m.trash) then exists=true;break end
+        end
+        if not exists then table.remove(self.state.trash,i);changed=true end
+    end
+    if changed then self:save() end
     local items={}
     for i,entry in ipairs(self.state.trash) do
         local n=i;local e=entry
